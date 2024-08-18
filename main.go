@@ -2,117 +2,200 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"github.com/gocolly/colly"
+	"github.com/google/uuid"
 	"log"
+	"math/rand"
+	"os"
+	"strings"
 	"sync"
+	"time"
+
+	_ "github.com/google/uuid"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gocolly/colly"
 )
 
-var db *sql.DB
-
-// Inicializar la conexión a la base de datos
-func initDB() {
-	var err error
-	db, err = sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/nombre_base_de_datos")
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-// Verifica si la URL ya existe en la base de datos
-func urlExists(url string) bool {
-	var exists bool
-	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM web_pages WHERE url = ?)", url).Scan(&exists)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return exists
-}
-
-// Almacena la página en la base de datos si no existe
-func savePage(url, title, content string) {
-	if !urlExists(url) {
-		_, err := db.Exec("INSERT INTO web_pages (url, title, content) VALUES (?, ?, ?)", url, title, content)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("Página almacenada: %s\n", title)
-	} else {
-		fmt.Printf("URL ya existente: %s\n", url)
-	}
-}
-
-// Scraper concurrente usando goroutines
-func scrapePage(url string, wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	c := colly.NewCollector()
-
-	c.OnHTML("title", func(e *colly.HTMLElement) {
-		title := e.Text
-		content := e.DOM.Text() // Extraer todo el texto de la página
-		savePage(url, title, content)
-	})
-
-	c.Visit(url)
+type SearchResult struct {
+	Title   string `json:"title"`
+	URL     string `json:"url"`
+	Content string `json:"content"`
 }
 
 func main() {
-	//initDB()
-	//defer db.Close()
-	//
-	//var wg sync.WaitGroup
-	//urls := []string{
-	//	"https://example.com/page1",
-	//	"https://example.com/page2",
-	//}
-	//
-	//for _, url := range urls {
-	//	wg.Add(1)
-	//	go scrapePage(url, &wg)
-	//}
-	//
-	//wg.Wait()
-	//url := "https://kidshealth.org/es/teens/cyberbullying.html"
-	//titles := make([]string, 0)
-	//c := colly.NewCollector()
-	//c.OnHTML("title", func(e *colly.HTMLElement) {
-	//	title := e.Text
-	//	titles = append(titles, title)
-	//	//content := e.DOM.Text() // Extraer todo el texto de la página
-	//	fmt.Println("---------------")
-	//})
-	//c.Visit(url)
-	//fmt.Println(titles)
-	// instantiate a new collector object
+	topics := []string{
+		"historias cortas de acoso",
+		"relatos de víctimas de acoso",
+		"historias de acoso laboral",
+		"testimonios de acoso escolar",
+		"experiencias de acoso sexual",
+		"historias de acoso en redes sociales",
+		"foros de víctimas de acoso",
+		"blogs sobre acoso",
+		"artículos periodísticos sobre acoso",
+		"casos reales de acoso",
+		"testimonios de acoso en línea",
+		"historias de acoso psicológico",
+		"narraciones de acoso entre compañeros",
+		"relatos de acoso en el trabajo",
+		"experiencias personales de acoso",
+		"casos de acoso documentados",
+		"historias de bullying en escuelas",
+		"testimonios de acoso en universidades",
+		"experiencias de acoso en el transporte público",
+		"historias de acoso cibernético",
+		"relatos de hostigamiento sexual",
+		"crónicas de acoso por internet",
+		"testimonios de víctimas de stalking",
+		"historias sobre acoso emocional",
+		"experiencias de acoso entre adolescentes",
+		"casos de acoso en la calle",
+		"narraciones de acoso en el deporte",
+		"relatos de acoso en comunidades virtuales",
+		"testimonios de acoso en relaciones de pareja",
+		"historias sobre acoso en centros educativos",
+		"historias de acoso a menores de edad",
+		"relatos de acoso a adultos mayores",
+		"testimonios de acoso en barrios",
+		"experiencias de acoso en plazas públicas",
+		"historias de acoso en centros comerciales",
+		"relatos de acoso en gimnasios",
+		"testimonios de acoso en academias",
+		"experiencias de acoso en universidades",
+		"historias de acoso en colegios",
+		"testimonios de acoso a mujeres adultas",
+		"historias de acoso en centros de trabajo",
+		"casos de acoso en áreas recreativas",
+		"experiencias de acoso en lugares públicos",
+		"relatos de acoso entre adultos en espacios laborales",
+		"historias de acoso en centros culturales",
+		"testimonios de acoso en instituciones educativas",
+		"historias de acoso entre adolescentes en colegios",
+		"relatos de acoso en espacios deportivos",
+		"testimonios de acoso en la comunidad",
+		"historias de acoso en parques",
+		"casos de acoso en gimnasios y centros de fitness",
+	}
+
+	var wg sync.WaitGroup
+	resultsChan := make(chan SearchResult)
+
+	// Goroutine para procesar los resultados recibidos en el canal
+	go func() {
+		searchResults := []SearchResult{}
+		for result := range resultsChan {
+			searchResults = append(searchResults, result)
+		}
+		// También los mostramos como JSON
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		if err := enc.Encode(searchResults); err != nil {
+			fmt.Printf("Error encoding results: %v\n", err)
+		}
+	}()
+
+	// Loop through each topic and launch a goroutine for each search
+	for _, topic := range topics {
+		wg.Add(1)
+		go func(topic string) {
+			defer wg.Done()
+			collectSearchResults(topic, resultsChan)
+		}(topic)
+	}
+
+	// Espera a que todas las goroutines terminen
+	wg.Wait()
+	close(resultsChan)
+
+	// Insert data into MySQL database
+	dsn := "root:secret@tcp(127.0.0.1:3309)/acosoDB"
+	db, err := sql.Open("mysql", dsn)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	// Insert data into MySQL database
+	for result := range resultsChan {
+		var exists bool
+		err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM scraped_results WHERE url = ?)", result.URL).Scan(&exists)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if exists == false {
+			var lastNumber *int
+			err = db.QueryRow("SELECT MAX(number) FROM scraped_results").Scan(&lastNumber)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if lastNumber == nil {
+				lastNumber = new(int)
+				*lastNumber = 0
+			}
+			id := uuid.New()
+			_, err = db.Exec("INSERT INTO scraped_results (id, title, url, number) VALUES (?, ?, ?, ?)",
+				id, result.Title, result.URL, *lastNumber+1)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("Inserted result with ID: %s\n", id)
+		}
+	}
+	fmt.Printf("Finished scraping %d topics\n", len(topics))
+}
+
+// Función para realizar el scraping de resultados de búsqueda y enviar al canal
+func collectSearchResults(topic string, resultsChan chan SearchResult) {
 	c := colly.NewCollector(
-		colly.AllowedDomains("www.scrapingcourse.com"),
+		colly.AllowedDomains("www.google.com", "google.com"),
+		colly.UserAgent("Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/116.0.0.0 Safari/537.36"),
 	)
+
+	// Configura un tiempo máximo de espera para las solicitudes
+	c.SetRequestTimeout(10 * time.Second)
+
+	// Set custom headers to simulate a real browser
 	c.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting: ", r.URL)
+		r.Headers.Set("Accept-Language", "es-ES,es;q=0.9,en;q=0.8")
+		fmt.Printf("Visiting %s\n", r.URL)
 	})
 
-	// triggered when the scraper encounters an error
-	c.OnError(func(_ *colly.Response, err error) {
-		fmt.Println("Something went wrong: ", err)
+	// Handle errors during scraping
+	c.OnError(func(r *colly.Response, e error) {
+		fmt.Printf("Error: %v\n", e)
 	})
 
-	// fired when the server responds
-	c.OnResponse(func(r *colly.Response) {
-		fmt.Println("Page visited: ", r.Request.URL)
+	// Extract search results
+	c.OnHTML("div.g", func(e *colly.HTMLElement) {
+		title := e.ChildText("h3")
+		url := e.ChildAttr("a", "href")
+		content := e.ChildText("span.aCOpRe")
+
+		if title != "" && url != "" {
+			resultsChan <- SearchResult{
+				Title:   cleanText(title),
+				URL:     cleanURL(url),
+				Content: cleanText(content),
+			}
+			fmt.Println("New result: ", title)
+		}
 	})
 
-	// triggered when a CSS selector matches an element
-	c.OnHTML("a", func(e *colly.HTMLElement) {
-		// printing all URLs associated with the <a> tag on the page
-		fmt.Println("%v", e.Attr("href"))
-	})
+	joinedTopic := strings.Join(strings.Fields(topic), "+")
+	searchURL := "https://www.google.com/search?q=" + joinedTopic
+	c.Visit(searchURL)
+	time.Sleep(time.Duration(2+rand.Intn(3)) * time.Second)
+}
 
-	// triggered once scraping is done (e.g., write the data to a CSV file)
-	c.OnScraped(func(r *colly.Response) {
-		fmt.Println(r.Request.URL, " scraped!")
-	})
-	fmt.Println("Scraping completado.")
+// Helper function to clean up text
+func cleanText(s string) string {
+	return strings.TrimSpace(s)
+}
+
+// Helper function to clean up URLs (remove unnecessary Google redirect parts)
+func cleanURL(s string) string {
+	return strings.TrimPrefix(s, "/url?q=")
 }
