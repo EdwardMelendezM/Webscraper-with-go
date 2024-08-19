@@ -2,13 +2,11 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"github.com/gocolly/colly"
 	"github.com/google/uuid"
 	"log"
 	"math/rand"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -27,74 +25,60 @@ type SearchResult struct {
 func main() {
 	topics := []string{
 		"historias cortas de acoso",
-		"relatos de víctimas de acoso",
-		"historias de acoso laboral",
-		"testimonios de acoso escolar",
-		"experiencias de acoso sexual",
-		"historias de acoso en redes sociales",
-		"foros de víctimas de acoso",
-		"blogs sobre acoso",
-		"artículos periodísticos sobre acoso",
-		"casos reales de acoso",
-		"testimonios de acoso en línea",
-		"historias de acoso psicológico",
-		"narraciones de acoso entre compañeros",
-		"relatos de acoso en el trabajo",
-		"experiencias personales de acoso",
-		"casos de acoso documentados",
-		"historias de bullying en escuelas",
-		"testimonios de acoso en universidades",
-		"experiencias de acoso en el transporte público",
-		"historias de acoso cibernético",
-		"relatos de hostigamiento sexual",
-		"crónicas de acoso por internet",
-		"testimonios de víctimas de stalking",
-		"historias sobre acoso emocional",
-		"experiencias de acoso entre adolescentes",
-		"casos de acoso en la calle",
-		"narraciones de acoso en el deporte",
-		"relatos de acoso en comunidades virtuales",
-		"testimonios de acoso en relaciones de pareja",
-		"historias sobre acoso en centros educativos",
-		"historias de acoso a menores de edad",
-		"relatos de acoso a adultos mayores",
-		"testimonios de acoso en barrios",
-		"experiencias de acoso en plazas públicas",
-		"historias de acoso en centros comerciales",
-		"relatos de acoso en gimnasios",
-		"testimonios de acoso en academias",
-		"experiencias de acoso en universidades",
-		"historias de acoso en colegios",
-		"testimonios de acoso a mujeres adultas",
-		"historias de acoso en centros de trabajo",
-		"casos de acoso en áreas recreativas",
-		"experiencias de acoso en lugares públicos",
-		"relatos de acoso entre adultos en espacios laborales",
-		"historias de acoso en centros culturales",
-		"testimonios de acoso en instituciones educativas",
-		"historias de acoso entre adolescentes en colegios",
-		"relatos de acoso en espacios deportivos",
-		"testimonios de acoso en la comunidad",
-		"historias de acoso en parques",
-		"casos de acoso en gimnasios y centros de fitness",
+		//"relatos de víctimas de acoso",
+		//"historias de acoso laboral",
+		//"testimonios de acoso escolar",
+		//"experiencias de acoso sexual",
+		//"historias de acoso en redes sociales",
+		//"foros de víctimas de acoso",
+		//"blogs sobre acoso",
+		//"artículos periodísticos sobre acoso",
+		//"casos reales de acoso",
+		//"testimonios de acoso en línea",
+		//"historias de acoso psicológico",
+		//"narraciones de acoso entre compañeros",
+		//"relatos de acoso en el trabajo",
+		//"experiencias personales de acoso",
+		//"casos de acoso documentados",
+		//"historias de bullying en escuelas",
+		//"testimonios de acoso en universidades",
+		//"experiencias de acoso en el transporte público",
+		//"historias de acoso cibernético",
+		//"relatos de hostigamiento sexual",
+		//"crónicas de acoso por internet",
+		//"testimonios de víctimas de stalking",
+		//"historias sobre acoso emocional",
+		//"experiencias de acoso entre adolescentes",
+		//"casos de acoso en la calle",
+		//"narraciones de acoso en el deporte",
+		//"relatos de acoso en comunidades virtuales",
+		//"testimonios de acoso en relaciones de pareja",
+		//"historias sobre acoso en centros educativos",
+		//"historias de acoso a menores de edad",
+		//"relatos de acoso a adultos mayores",
+		//"testimonios de acoso en barrios",
+		//"experiencias de acoso en plazas públicas",
+		//"historias de acoso en centros comerciales",
+		//"relatos de acoso en gimnasios",
+		//"testimonios de acoso en academias",
+		//"experiencias de acoso en universidades",
+		//"historias de acoso en colegios",
+		//"testimonios de acoso a mujeres adultas",
+		//"historias de acoso en centros de trabajo",
+		//"casos de acoso en áreas recreativas",
+		//"experiencias de acoso en lugares públicos",
+		//"relatos de acoso entre adultos en espacios laborales",
+		//"historias de acoso en centros culturales",
+		//"testimonios de acoso en instituciones educativas",
+		//"historias de acoso entre adolescentes en colegios",
+		//"relatos de acoso en espacios deportivos",
+		//"testimonios de acoso en la comunidad",
+		//"historias de acoso en parques",
+		//"casos de acoso en gimnasios y centros de fitness",
 	}
 
 	var wg sync.WaitGroup
 	resultsChan := make(chan SearchResult)
-
-	// Goroutine para procesar los resultados recibidos en el canal
-	go func() {
-		searchResults := []SearchResult{}
-		for result := range resultsChan {
-			searchResults = append(searchResults, result)
-		}
-		// También los mostramos como JSON
-		enc := json.NewEncoder(os.Stdout)
-		enc.SetIndent("", "  ")
-		if err := enc.Encode(searchResults); err != nil {
-			fmt.Printf("Error encoding results: %v\n", err)
-		}
-	}()
 
 	// Loop through each topic and launch a goroutine for each search
 	for _, topic := range topics {
@@ -108,6 +92,15 @@ func main() {
 	// Espera a que todas las goroutines terminen
 	wg.Wait()
 	close(resultsChan)
+	var results []SearchResult
+	for result := range resultsChan {
+		results = append(results, SearchResult{
+			Title:   result.Title,
+			URL:     result.URL,
+			Content: result.Content,
+		})
+	}
+	fmt.Printf("Scraped %d results\n", len(results))
 
 	// Insert data into MySQL database
 	dsn := "root:secret@tcp(127.0.0.1:3309)/acosoDB"
@@ -121,7 +114,8 @@ func main() {
 	// Insert data into MySQL database
 	for result := range resultsChan {
 		var exists bool
-		err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM scraped_results WHERE url = ?)", result.URL).Scan(&exists)
+		err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM scraped_results WHERE url = ?)",
+			result.URL).Scan(&exists)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -149,13 +143,15 @@ func main() {
 
 // Función para realizar el scraping de resultados de búsqueda y enviar al canal
 func collectSearchResults(topic string, resultsChan chan SearchResult) {
+	time.Sleep(time.Duration(2+rand.Intn(3)) * time.Second)
 	c := colly.NewCollector(
 		colly.AllowedDomains("www.google.com", "google.com"),
+		colly.Async(true),
 		colly.UserAgent("Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/116.0.0.0 Safari/537.36"),
 	)
 
 	// Configura un tiempo máximo de espera para las solicitudes
-	c.SetRequestTimeout(10 * time.Second)
+	c.SetRequestTimeout(5 * time.Second)
 
 	// Set custom headers to simulate a real browser
 	c.OnRequest(func(r *colly.Request) {
@@ -187,7 +183,7 @@ func collectSearchResults(topic string, resultsChan chan SearchResult) {
 	joinedTopic := strings.Join(strings.Fields(topic), "+")
 	searchURL := "https://www.google.com/search?q=" + joinedTopic
 	c.Visit(searchURL)
-	time.Sleep(time.Duration(2+rand.Intn(3)) * time.Second)
+
 }
 
 // Helper function to clean up text
