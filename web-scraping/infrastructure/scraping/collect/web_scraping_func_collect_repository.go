@@ -14,14 +14,14 @@ func (r WebScrapingCollectRepository) CollectSearchResults(
 	topic string,
 	resultsChan chan<- domain.SearchResult,
 ) {
-	time.Sleep(time.Duration(2+rand.Intn(3)) * time.Second)
+	time.Sleep(time.Duration(2+rand.Intn(10)) * time.Second)
 	c := colly.NewCollector(
 		colly.AllowedDomains("www.google.com", "google.com"),
 		colly.Async(true),
 		colly.UserAgent("Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/116.0.0.0 Safari/537.36"),
 	)
 
-	// Configura un tiempo máximo de espera para las solicitudes
+	// Set a timeout to avoid infinite waiting
 	c.SetRequestTimeout(5 * time.Second)
 
 	// Set custom headers to simulate a real browser
@@ -53,7 +53,11 @@ func (r WebScrapingCollectRepository) CollectSearchResults(
 
 	joinedTopic := strings.Join(strings.Fields(topic), "+")
 	searchURL := "https://www.google.com/search?q=" + joinedTopic
-	c.Visit(searchURL)
+	err := c.Visit(searchURL)
+	if err != nil {
+		fmt.Println("Error visiting URL: ", searchURL)
+	}
+
 }
 
 // Helper function to clean up text
