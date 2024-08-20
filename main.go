@@ -18,9 +18,18 @@ func main() {
 	webScrapingRepository := WebScrapingRepository.NewWebScrapingRepository()
 	webScrapingCollectRepository := WebScrapingCollectRepository.NewWebScrapingCollectRepository()
 
-	webScraperUseCase.NewWebScrapingFuncUseCase(
+	instance := webScraperUseCase.NewWebScrapingFuncUseCase(
 		webScrapingRepository,
 		webScrapingCollectRepository,
 		topicsRepository)
+	value, err := instance.ExtractSearchResults()
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	if value {
+		fmt.Printf("Scraping was successful")
+	} else {
+		fmt.Printf("Scraping was not successful")
+	}
 	fmt.Printf("Finished scraping")
 }
