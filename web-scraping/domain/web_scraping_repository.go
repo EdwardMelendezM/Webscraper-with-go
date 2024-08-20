@@ -5,3 +5,7 @@ type WebScrapingRepository interface {
 	GetLastNumber() (lastNumber *int, err error)
 	CreateRecord(id string, body CreateRecordWebScraping) (lastId *string, err error)
 }
+
+type WebScrapingCollectRepository interface {
+	CollectSearchResults(topic string, resultsChan chan<- SearchResult)
+}
