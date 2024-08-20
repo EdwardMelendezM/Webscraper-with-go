@@ -1,0 +1,1 @@
+INSERT INTO scraped_results (id, title, url, number, createdAt) VALUES (?, ?, ?, ?, ?)
