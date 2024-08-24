@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"sync"
 
 	"webscraper-go/web-scraping/domain"
@@ -45,29 +46,30 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 
 	for _, result := range results {
 		fmt.Println("Title: ", result.Title)
-		//exists, errVerify := u.WebScrapingRepository.VerifyExistsUrl(result.Url)
-		//if errVerify != nil {
-		//	return false, errVerify
-		//}
-		//if !exists {
-		//	lastNumber, errLastNumber := u.WebScrapingRepository.GetLastNumber()
-		//	if errLastNumber != nil {
-		//		return false, errLastNumber
-		//	}
-		//	if lastNumber == nil {
-		//		lastNumber = new(int)
-		//		*lastNumber = 0
-		//	}
-		//	id := uuid.New().String()
-		//	_, errCreateNewRecord := u.WebScrapingRepository.CreateRecord(id, domain.CreateRecordWebScraping{
-		//		Title:  result.Title,
-		//		Url:    result.Url,
-		//		Number: *lastNumber + 1,
-		//	})
-		//	if errCreateNewRecord != nil {
-		//		return false, errLastNumber
-		//	}
-		//}
+
+		exists, errVerify := u.WebScrapingRepository.VerifyExistsUrl(result.Url)
+		if errVerify != nil {
+			return false, errVerify
+		}
+		if !exists {
+			lastNumber, errLastNumber := u.WebScrapingRepository.GetLastNumber()
+			if errLastNumber != nil {
+				return false, errLastNumber
+			}
+			if lastNumber == nil {
+				lastNumber = new(int)
+				*lastNumber = 0
+			}
+			id := uuid.New().String()
+			_, errCreateNewRecord := u.WebScrapingRepository.CreateRecord(id, domain.CreateRecordWebScraping{
+				Title:  result.Title,
+				Url:    result.Url,
+				Number: *lastNumber + 1,
+			})
+			if errCreateNewRecord != nil {
+				return false, errLastNumber
+			}
+		}
 	}
 
 	return true, nil

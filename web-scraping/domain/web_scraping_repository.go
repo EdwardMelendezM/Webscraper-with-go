@@ -5,6 +5,7 @@ type WebScrapingRepository interface {
 	GetLastNumber() (lastNumber *int, err error)
 	CreateRecord(id string, body CreateRecordWebScraping) (lastId *string, err error)
 	UpdateRecordResult(id string, body UpdateRecordWebScraping) (err error)
+	GetRecordResult() []WebScrapingResult
 }
 
 type WebScrapingCollectRepository interface {

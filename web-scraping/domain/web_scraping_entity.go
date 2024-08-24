@@ -15,3 +15,8 @@ type CreateRecordWebScraping struct {
 type UpdateRecordWebScraping struct {
 	Content string `json:"content"`
 }
+
+type WebScrapingResult struct {
+	Id  string `json:""`
+	Url string `json:"https://google.com.pe"`
+}
