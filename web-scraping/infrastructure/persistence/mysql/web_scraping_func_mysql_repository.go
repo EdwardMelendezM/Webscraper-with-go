@@ -18,6 +18,9 @@ var QueryGetLastNumber string
 //go:embed sql/create_new_record.sql
 var QueryCreateNewRecord string
 
+//go:embed sql/update_record_result.sql
+var QueryUpdateRecordResult string
+
 func (r WebScrapingMysqlRepo) VerifyExistsUrl(
 	url string,
 ) (exists bool, err error) {
@@ -62,5 +65,19 @@ func (r WebScrapingMysqlRepo) CreateRecord(
 	}
 	lastId = &id
 	return lastId, nil
+}
 
+func (r WebScrapingMysqlRepo) UpdateRecordResult(
+	id string,
+	body domain.UpdateRecordWebScraping,
+) (err error) {
+	_, err = db.Client.Exec(
+		QueryUpdateRecordResult,
+		body.Content,
+		id,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
 }
