@@ -1,1 +1,2 @@
-INSERT INTO scraped_results (id, title, url, number, createdAt) VALUES (?, ?, ?, ?, ?)
+INSERT INTO scraped_results (id, project_id, title, url, number, createdAt)
+VALUES (?, ?, ?, ?, ?, ?)

@@ -4,6 +4,7 @@ type SearchResult struct {
 	Title   string `json:"title"`
 	Url     string `json:"url"`
 	Content string `json:"content"`
+	Path    string `json:"path"`
 }
 
 type CreateRecordWebScraping struct {
@@ -17,6 +18,14 @@ type UpdateRecordWebScraping struct {
 }
 
 type WebScrapingResult struct {
-	Id  string `json:""`
-	Url string `json:"https://google.com.pe"`
+	Id    string `json:"c68a81dc-623e-11ef-9d2f-0242ac110002"`
+	Title string `json:"title"`
+	Url   string `json:"https://google.com.pe"`
+	Path  string `json:"path"`
+}
+
+type NewRecordWebScraping struct {
+	Title string `json:"title"`
+	Url   string `json:"url"`
+	Path  string `json:"path"`
 }

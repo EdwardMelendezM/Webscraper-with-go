@@ -46,6 +46,7 @@ func (r WebScrapingCollectRepository) CollectSearchResults(
 				Title:   cleanText(title),
 				Url:     cleanURL(url),
 				Content: cleanText(content),
+				Path:    "",
 			}
 			fmt.Println("New result: ", title)
 		}

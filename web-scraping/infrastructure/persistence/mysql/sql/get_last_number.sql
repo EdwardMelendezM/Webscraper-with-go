@@ -1,1 +1,3 @@
-SELECT MAX(number) FROM scraped_results
+SELECT MAX(number)
+FROM scraped_results
+WHERE project_id = ?;

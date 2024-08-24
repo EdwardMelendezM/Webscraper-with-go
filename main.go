@@ -2,14 +2,12 @@ package main
 
 import (
 	"fmt"
-
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/google/uuid"
 
 	TopicsRepository "webscraper-go/topics/infrastructure/persistence/mysql"
+	WebScrapingCollectRepository "webscraper-go/web-scraping/infrastructure/scraping/collect"
 
 	WebScrapingRepository "webscraper-go/web-scraping/infrastructure/persistence/mysql"
-	WebScrapingCollectRepository "webscraper-go/web-scraping/infrastructure/scraping/collect"
 	webScraperUseCase "webscraper-go/web-scraping/usecase"
 )
 
@@ -32,4 +30,5 @@ func main() {
 		fmt.Printf("Scraping was not successful")
 	}
 	fmt.Printf("Finished scraping")
+
 }

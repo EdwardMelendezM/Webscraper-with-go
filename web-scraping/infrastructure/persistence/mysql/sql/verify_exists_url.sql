@@ -1,2 +1,1 @@
-
-SELECT EXISTS(SELECT 1 FROM scraped_results WHERE url = ?
+SELECT EXISTS(SELECT 1 FROM scraped_results WHERE url = ? AND project_id = ?);
