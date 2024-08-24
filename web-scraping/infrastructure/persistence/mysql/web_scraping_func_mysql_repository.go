@@ -21,6 +21,9 @@ var QueryCreateNewRecord string
 //go:embed sql/update_record_result.sql
 var QueryUpdateRecordResult string
 
+//go:embed sql/get_record_results.sql
+var QueryGetRecordResult string
+
 func (r WebScrapingMysqlRepo) VerifyExistsUrl(
 	url string,
 ) (exists bool, err error) {
@@ -80,4 +83,10 @@ func (r WebScrapingMysqlRepo) UpdateRecordResult(
 		return err
 	}
 	return nil
+}
+
+func (r WebScrapingMysqlRepo) GetRecordResult(
+	sizeRecord int,
+) (webScrapingResults domain.WebScrapingResult) {
+
 }
