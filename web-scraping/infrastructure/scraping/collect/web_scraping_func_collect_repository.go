@@ -2,11 +2,14 @@ package collect
 
 import (
 	"fmt"
-	"github.com/gocolly/colly"
+	"io/ioutil"
 	"math/rand"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/gocolly/colly"
 	"webscraper-go/web-scraping/domain"
 )
 
@@ -39,14 +42,14 @@ func (r WebScrapingCollectRepository) CollectSearchResults(
 	c.OnHTML("div.g", func(e *colly.HTMLElement) {
 		title := e.ChildText("h3")
 		url := e.ChildAttr("a", "href")
-		content := e.ChildText("span.aCOpRe")
 
 		if title != "" && url != "" {
+			pageContent, path := downloadPage(c, url, title)
 			resultsChan <- domain.SearchResult{
 				Title:   cleanText(title),
 				Url:     cleanURL(url),
-				Content: cleanText(content),
-				Path:    "",
+				Content: pageContent,
+				Path:    path,
 			}
 			fmt.Println("New result: ", title)
 		}
@@ -59,6 +62,49 @@ func (r WebScrapingCollectRepository) CollectSearchResults(
 		fmt.Println("Error visiting URL: ", searchURL)
 	}
 
+}
+
+func downloadPage(c *colly.Collector, url string, title string) (string, string) {
+	var pageContent string
+	var path string
+
+	// Create a new collector for downloading the content
+	pageCollector := c.Clone()
+
+	pageCollector.OnResponse(func(r *colly.Response) {
+		pageContent = string(r.Body)
+
+		// Create a directory for storing the downloaded pages
+		dir := "downloaded_pages"
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			fmt.Println("Error creating directory:", err)
+			return
+		}
+
+		// Save the content to a file
+		filename := filepath.Join(dir, sanitizeFilename(title)+".html")
+		err := ioutil.WriteFile(filename, r.Body, 0644)
+		if err != nil {
+			fmt.Println("Error saving file:", err)
+			return
+		}
+
+		path = filename
+	})
+
+	pageCollector.Visit(url)
+
+	return pageContent, path
+}
+
+// Helper function to sanitize filenames
+func sanitizeFilename(name string) string {
+	return strings.Map(func(r rune) rune {
+		if strings.ContainsRune(`<>:"/\|?*`, r) || r == ' ' {
+			return '_'
+		}
+		return r
+	}, name)
 }
 
 // Helper function to clean up text
