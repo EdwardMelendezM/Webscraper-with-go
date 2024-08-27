@@ -16,7 +16,10 @@ import (
 var QueryGetTopics string
 
 func (r TopicsMysqlRepo) GetTopics(projectId string) (topics []domain.Topic, err error) {
-	results, err := db.Client.Query(QueryGetTopics, projectId)
+	results, err := db.Client.Query(
+		QueryGetTopics,
+		projectId,
+	)
 	defer func(results *sql.Rows) {
 		errClose := results.Close()
 		if errClose != nil {
