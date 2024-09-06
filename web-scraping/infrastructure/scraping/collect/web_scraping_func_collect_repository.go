@@ -15,7 +15,7 @@ import (
 
 func (r WebScrapingCollectRepository) CollectSearchResults(
 	topic string,
-	resultsChan chan<- domain.SearchResult,
+	results []domain.SearchResult,
 ) {
 	time.Sleep(time.Duration(2+rand.Intn(10)) * time.Second)
 	c := colly.NewCollector(
@@ -60,12 +60,12 @@ func (r WebScrapingCollectRepository) CollectSearchResults(
 				return
 			}
 
-			resultsChan <- domain.SearchResult{
+			results = append(results, domain.SearchResult{
 				Title:   cleanText(title),
 				Url:     cleanedURL,
 				Content: cleanText(string(body)),
 				Path:    "", // You can modify this if needed
-			}
+			})
 		}
 	})
 

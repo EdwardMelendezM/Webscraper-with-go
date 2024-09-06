@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"sync"
-
 	"webscraper-go/web-scraping/domain"
 )
 
@@ -13,30 +11,10 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 		return false, err
 	}
 
-	resultsChan := make(chan domain.SearchResult)
-	var wg sync.WaitGroup
+	results := make([]domain.SearchResult, 0)
 
 	for _, topic := range topics {
-		wg.Add(1)
-		go func(topicTitle string) {
-			defer wg.Done()
-			u.WebScrapingCollectRepository.CollectSearchResults(topicTitle, resultsChan)
-		}(topic.Title)
-	}
-
-	go func() {
-		wg.Wait()
-		close(resultsChan)
-	}()
-
-	var results []domain.SearchResult
-	for result := range resultsChan {
-		results = append(results, domain.SearchResult{
-			Title:   result.Title,
-			Url:     result.Url,
-			Content: result.Content,
-			Path:    result.Path,
-		})
+		u.WebScrapingCollectRepository.CollectSearchResults(topic.Title, results)
 	}
 
 	if len(results) == 0 {

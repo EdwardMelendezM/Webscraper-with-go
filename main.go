@@ -2,16 +2,38 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	_ "github.com/go-sql-driver/mysql"
 
-	TopicsRepository "webscraper-go/topics/infrastructure/persistence/mysql"
-	WebScrapingCollectRepository "webscraper-go/web-scraping/infrastructure/scraping/collect"
+	"github.com/EdwardMelendezM/api-info-shared/config"
+	"github.com/EdwardMelendezM/api-info-shared/db"
 
+	TopicsRepository "webscraper-go/topics/infrastructure/persistence/mysql"
 	WebScrapingRepository "webscraper-go/web-scraping/infrastructure/persistence/mysql"
+	WebScrapingCollectRepository "webscraper-go/web-scraping/infrastructure/scraping/collect"
 	webScraperUseCase "webscraper-go/web-scraping/usecase"
 )
 
 func main() {
+	cfg := config.Configuration{
+		ServerPort:  os.Getenv("SERVER_PORT"),
+		StoragePath: os.Getenv("STORAGE_PATH"),
+		DB: config.DB{
+			DbDatabase: os.Getenv("DB_DATABASE"),
+			DbHost:     os.Getenv("DB_HOST"),
+			DbPort:     os.Getenv("DB_PORT"),
+			DbUsername: os.Getenv("DB_USERNAME"),
+			DbPassword: os.Getenv("DB_PASSWORD"),
+		},
+	}
+
+	err := db.InitClients(cfg)
+	if err != nil {
+		return
+	}
+	defer db.Client.Close()
+
 	topicsRepository := TopicsRepository.NewTopicsRepository()
 	webScrapingRepository := WebScrapingRepository.NewWebScrapingRepository()
 	webScrapingCollectRepository := WebScrapingCollectRepository.NewWebScrapingCollectRepository()
@@ -20,9 +42,9 @@ func main() {
 		webScrapingRepository,
 		webScrapingCollectRepository,
 		topicsRepository)
-	value, err := instance.ExtractSearchResults()
-	if err != nil {
-		fmt.Printf("Error: %v", err)
+	value, errExtract := instance.ExtractSearchResults()
+	if errExtract != nil {
+		fmt.Printf("Error: %v", errExtract)
 	}
 	if value {
 		fmt.Printf("Scraping was successful")

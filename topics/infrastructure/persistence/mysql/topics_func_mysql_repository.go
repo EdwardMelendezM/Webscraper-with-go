@@ -16,7 +16,10 @@ import (
 //go:embed sql/get_topics.sql
 var QueryGetTopics string
 
-func (r TopicsMysqlRepo) GetTopics(projectId string) (topics []domain.Topic, err error) {
+func (r TopicsMysqlRepo) GetTopics(projectId string) (
+	topics []domain.Topic,
+	err error,
+) {
 	results, err := db.Client.Query(
 		QueryGetTopics,
 		projectId,
