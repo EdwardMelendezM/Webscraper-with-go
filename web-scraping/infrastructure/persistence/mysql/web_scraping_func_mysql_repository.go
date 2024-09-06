@@ -69,6 +69,7 @@ func (r WebScrapingMysqlRepo) CreateRecord(
 		projectId,
 		body.Title,
 		body.Url,
+		body.Content,
 		body.Number,
 		now,
 	)

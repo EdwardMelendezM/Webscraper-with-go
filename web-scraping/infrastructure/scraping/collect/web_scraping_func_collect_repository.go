@@ -74,7 +74,6 @@ func (r WebScrapingCollectRepository) CollectSearchResults(
 	if err != nil {
 		fmt.Println("Error visiting URL: ", searchURL)
 	}
-
 }
 
 // Helper function to clean up text

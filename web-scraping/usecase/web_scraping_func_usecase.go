@@ -1,6 +1,10 @@
 package usecase
 
 import (
+	"golang.org/x/text/encoding/charmap"
+	"strings"
+
+	"github.com/PuerkitoBio/goquery"
 	"github.com/google/uuid"
 	"webscraper-go/web-scraping/domain"
 )
@@ -23,7 +27,6 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 	}
 
 	existingResults, errResult := u.WebScrapingRepository.GetRecordResult(projectId, 1000)
-
 	if errResult != nil {
 		return false, errResult
 	}
@@ -37,7 +40,6 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 		existingMap[existingResult.Url] = domain.NewRecordWebScraping{
 			Title: existingResult.Title,
 			Url:   existingResult.Url,
-			Path:  existingResult.Path,
 		}
 	}
 
@@ -46,10 +48,15 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 		if _, ok := seenMap[result.Url]; ok {
 			continue
 		}
+
+		if strings.Contains(result.Url, "pdf") {
+			continue
+		}
+
 		seenMap[result.Url] = domain.NewRecordWebScraping{
-			Title: result.Title,
-			Url:   result.Url,
-			Path:  result.Path,
+			Title:   result.Title,
+			Url:     result.Url,
+			Content: result.Content,
 		}
 	}
 
@@ -57,9 +64,9 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 	for _, result := range seenMap {
 		if _, ok := existingMap[result.Url]; !ok {
 			notExistingResults[result.Url] = domain.NewRecordWebScraping{
-				Title: result.Title,
-				Url:   result.Url,
-				Path:  result.Path,
+				Title:   result.Title,
+				Url:     result.Url,
+				Content: result.Content,
 			}
 			delete(existingMap, result.Url)
 		}
@@ -77,18 +84,41 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 	}
 
 	// 5: Add new record notExistingResults
-	for _, existingResult := range results {
+	for _, notExistingResult := range notExistingResults {
 		id := uuid.New().String()
+		*lastNumber = *lastNumber + 1
+		contentCleaned := extractText(notExistingResult.Content)
+		contentUtf8, errUt8 := convertToUTF8(contentCleaned)
+		if errUt8 != nil {
+			break
+		}
 		body := domain.CreateRecordWebScraping{
-			Title:  existingResult.Title,
-			Url:    existingResult.Url,
-			Number: *lastNumber,
+			Title:   notExistingResult.Title,
+			Url:     notExistingResult.Url,
+			Content: contentUtf8,
+			Number:  *lastNumber,
 		}
 		_, errCreateNewRecord := u.WebScrapingRepository.CreateRecord(id, projectId, body)
 		if errCreateNewRecord != nil {
-			return false, errCreateNewRecord
+			break
 		}
-		*lastNumber = *lastNumber + 1
 	}
 	return true, nil
+}
+
+func extractText(htmlContent string) string {
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	if err != nil {
+		panic(err)
+	}
+	return doc.Text()
+}
+
+func convertToUTF8(input string) (string, error) {
+	decoder := charmap.ISO8859_1.NewDecoder()
+	output, err := decoder.String(input)
+	if err != nil {
+		return "", err
+	}
+	return output, nil
 }

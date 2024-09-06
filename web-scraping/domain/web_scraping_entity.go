@@ -8,9 +8,10 @@ type SearchResult struct {
 }
 
 type CreateRecordWebScraping struct {
-	Title  string `json:"title"`
-	Url    string `json:"url"`
-	Number int    `json:"number"`
+	Title   string `json:"title"`
+	Url     string `json:"url"`
+	Content string `json:"content"`
+	Number  int    `json:"number"`
 }
 
 type UpdateRecordWebScraping struct {
@@ -21,11 +22,10 @@ type WebScrapingResult struct {
 	Id    string `json:"c68a81dc-623e-11ef-9d2f-0242ac110002"`
 	Title string `json:"title"`
 	Url   string `json:"https://google.com.pe"`
-	Path  string `json:"path"`
 }
 
 type NewRecordWebScraping struct {
-	Title string `json:"title"`
-	Url   string `json:"url"`
-	Path  string `json:"path"`
+	Title   string `json:"title"`
+	Url     string `json:"url"`
+	Content string `json:"content"`
 }

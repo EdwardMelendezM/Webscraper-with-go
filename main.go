@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
@@ -32,7 +33,12 @@ func main() {
 	if err != nil {
 		return
 	}
-	defer db.Client.Close()
+	defer func(Client *sql.DB) {
+		errClient := Client.Close()
+		if errClient != nil {
+
+		}
+	}(db.Client)
 
 	topicsRepository := TopicsRepository.NewTopicsRepository()
 	webScrapingRepository := WebScrapingRepository.NewWebScrapingRepository()
@@ -42,6 +48,7 @@ func main() {
 		webScrapingRepository,
 		webScrapingCollectRepository,
 		topicsRepository)
+
 	value, errExtract := instance.ExtractSearchResults()
 	if errExtract != nil {
 		fmt.Printf("Error: %v", errExtract)
