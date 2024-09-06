@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/google/uuid"
 	"webscraper-go/web-scraping/domain"
 )
 
@@ -14,17 +15,24 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 	results := make([]domain.SearchResult, 0)
 
 	for _, topic := range topics {
-		u.WebScrapingCollectRepository.CollectSearchResults(topic.Title, results)
+		u.WebScrapingCollectRepository.CollectSearchResults(topic.Title, &results)
 	}
 
 	if len(results) == 0 {
 		return false, nil
 	}
 
-	existingResults, err := u.WebScrapingRepository.GetRecordResult(projectId, 1000)
+	existingResults, errResult := u.WebScrapingRepository.GetRecordResult(projectId, 1000)
+
+	if errResult != nil {
+		return false, errResult
+	}
 
 	existingMap := make(map[string]domain.NewRecordWebScraping)
 	notExistingResults := make(map[string]domain.NewRecordWebScraping)
+	seenMap := make(map[string]domain.NewRecordWebScraping)
+
+	// 1. Map existing results
 	for _, existingResult := range existingResults {
 		existingMap[existingResult.Url] = domain.NewRecordWebScraping{
 			Title: existingResult.Title,
@@ -32,7 +40,21 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 			Path:  existingResult.Path,
 		}
 	}
+
+	// 2. Verify repeated results
 	for _, result := range results {
+		if _, ok := seenMap[result.Url]; ok {
+			continue
+		}
+		seenMap[result.Url] = domain.NewRecordWebScraping{
+			Title: result.Title,
+			Url:   result.Url,
+			Path:  result.Path,
+		}
+	}
+
+	// 3. Verify if existing results are in the new results
+	for _, result := range seenMap {
 		if _, ok := existingMap[result.Url]; !ok {
 			notExistingResults[result.Url] = domain.NewRecordWebScraping{
 				Title: result.Title,
@@ -43,37 +65,30 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 		}
 	}
 
-	//Step 1: Delete file in the path existingMap
-	//Step 2: Get content of files in the path notExistingResults
-	//Step 3: Add new record notExistingResults
+	// 4: Get last number
+	lastNumber, errLastNumber := u.WebScrapingRepository.GetLastNumber(projectId)
+	if errLastNumber != nil {
+		return false, errLastNumber
+	}
 
-	//for _, existingResult := range results {
-	//	fmt.Println("Title: ", existingResult.Title)
-	//
-	//	exists, errVerify := u.WebScrapingRepository.VerifyExistsUrl(existingResult.Url)
-	//	if errVerify != nil {
-	//		return false, errVerify
-	//	}
-	//	if !exists {
-	//		lastNumber, errLastNumber := u.WebScrapingRepository.GetLastNumber()
-	//		if errLastNumber != nil {
-	//			return false, errLastNumber
-	//		}
-	//		if lastNumber == nil {
-	//			lastNumber = new(int)
-	//			*lastNumber = 0
-	//		}
-	//		id := uuid.New().String()
-	//		_, errCreateNewRecord := u.WebScrapingRepository.CreateRecord(id, domain.CreateRecordWebScraping{
-	//			Title:  existingResult.Title,
-	//			Url:    existingResult.Url,
-	//			Number: *lastNumber + 1,
-	//		})
-	//		if errCreateNewRecord != nil {
-	//			return false, errLastNumber
-	//		}
-	//	}
-	//}
+	if lastNumber == nil {
+		lastNumber = new(int)
+		*lastNumber = 0
+	}
 
+	// 5: Add new record notExistingResults
+	for _, existingResult := range results {
+		id := uuid.New().String()
+		body := domain.CreateRecordWebScraping{
+			Title:  existingResult.Title,
+			Url:    existingResult.Url,
+			Number: *lastNumber,
+		}
+		_, errCreateNewRecord := u.WebScrapingRepository.CreateRecord(id, projectId, body)
+		if errCreateNewRecord != nil {
+			return false, errCreateNewRecord
+		}
+		*lastNumber = *lastNumber + 1
+	}
 	return true, nil
 }

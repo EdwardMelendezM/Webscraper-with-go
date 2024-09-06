@@ -3,7 +3,6 @@ package collect
 import (
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -15,12 +14,10 @@ import (
 
 func (r WebScrapingCollectRepository) CollectSearchResults(
 	topic string,
-	results []domain.SearchResult,
+	results *[]domain.SearchResult,
 ) {
-	time.Sleep(time.Duration(2+rand.Intn(10)) * time.Second)
 	c := colly.NewCollector(
 		colly.AllowedDomains("www.google.com", "google.com"),
-		colly.Async(true),
 		colly.UserAgent("Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/116.0.0.0 Safari/537.36"),
 	)
 
@@ -60,12 +57,14 @@ func (r WebScrapingCollectRepository) CollectSearchResults(
 				return
 			}
 
-			results = append(results, domain.SearchResult{
+			newResult := domain.SearchResult{
 				Title:   cleanText(title),
 				Url:     cleanedURL,
 				Content: cleanText(string(body)),
 				Path:    "", // You can modify this if needed
-			})
+			}
+
+			*results = append(*results, newResult)
 		}
 	})
 

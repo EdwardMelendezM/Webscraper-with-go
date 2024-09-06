@@ -9,5 +9,5 @@ type WebScrapingRepository interface {
 }
 
 type WebScrapingCollectRepository interface {
-	CollectSearchResults(topic string, resultsChan []SearchResult)
+	CollectSearchResults(topic string, resultsChan *[]SearchResult)
 }
