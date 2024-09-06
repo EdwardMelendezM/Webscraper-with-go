@@ -8,5 +8,5 @@ type Topic struct {
 	//Description: the title of the topic
 	Title string `json:"title" example:"historias cortas de acoso"`
 	//Description: the created at of the topic
-	CreatedAt time.Time `json:"created_at" example:"2022-01-01T00:00:00Z"`
+	CreatedAt *time.Time `json:"created_at" example:"2022-01-01T00:00:00Z"`
 }

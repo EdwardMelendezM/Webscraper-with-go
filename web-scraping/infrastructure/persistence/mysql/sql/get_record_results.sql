@@ -4,5 +4,6 @@ SELECT id    AS scraped_result_id,
        path  AS scraped_result_path
 FROM scraped_results
 WHERE project_id = ?
+  AND deleted_at IS NULL
 ORDER BY created_at
 LIMIT ?

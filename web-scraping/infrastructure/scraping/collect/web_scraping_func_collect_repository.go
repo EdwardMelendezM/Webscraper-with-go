@@ -2,10 +2,13 @@ package collect
 
 import (
 	"fmt"
-	"github.com/gocolly/colly"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gocolly/colly"
 
 	"webscraper-go/web-scraping/domain"
 )
@@ -39,16 +42,30 @@ func (r WebScrapingCollectRepository) CollectSearchResults(
 	c.OnHTML("div.g", func(e *colly.HTMLElement) {
 		title := e.ChildText("h3")
 		url := e.ChildAttr("a", "href")
-		content := e.ChildText("span.aCOpRe")
 
 		if title != "" && url != "" {
+			cleanedURL := cleanURL(url)
+
+			// Fetch the content from the URL
+			resp, err := http.Get(cleanedURL)
+			if err != nil {
+				fmt.Printf("Error downloading content from %s: %v\n", cleanedURL, err)
+				return
+			}
+			defer resp.Body.Close()
+
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				fmt.Printf("Error reading content from %s: %v\n", cleanedURL, err)
+				return
+			}
+
 			resultsChan <- domain.SearchResult{
 				Title:   cleanText(title),
-				Url:     cleanURL(url),
-				Content: cleanText(content),
-				Path:    "",
+				Url:     cleanedURL,
+				Content: cleanText(string(body)),
+				Path:    "", // You can modify this if needed
 			}
-			fmt.Println("New result: ", title)
 		}
 	})
 

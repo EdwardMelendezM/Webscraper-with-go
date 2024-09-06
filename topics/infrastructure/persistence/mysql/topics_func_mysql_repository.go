@@ -5,9 +5,10 @@ import (
 	_ "database/sql"
 	_ "embed"
 
-	"github.com/EdwardMelendezM/api-info-shared/db"
 	"github.com/jackskj/carta"
 	"github.com/stroiman/go-automapper"
+
+	"github.com/EdwardMelendezM/api-info-shared/db"
 
 	"webscraper-go/topics/domain"
 )
