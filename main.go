@@ -36,7 +36,7 @@ func main() {
 	defer func(Client *sql.DB) {
 		errClient := Client.Close()
 		if errClient != nil {
-
+			fmt.Printf("Error db: %v", errClient)
 		}
 	}(db.Client)
 
