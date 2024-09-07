@@ -1,8 +1,8 @@
 package usecase
 
 import (
-	"golang.org/x/text/encoding/charmap"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/google/uuid"
@@ -50,6 +50,10 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 		}
 
 		if strings.Contains(result.Url, "pdf") {
+			continue
+		}
+
+		if strings.Contains(result.Content, "PDF") {
 			continue
 		}
 
@@ -115,10 +119,13 @@ func extractText(htmlContent string) string {
 }
 
 func convertToUTF8(input string) (string, error) {
-	decoder := charmap.ISO8859_1.NewDecoder()
-	output, err := decoder.String(input)
-	if err != nil {
-		return "", err
+	var output strings.Builder
+	for _, r := range input {
+		// Verifica si el carácter es válido en UTF-8
+		if utf8.ValidRune(r) {
+			output.WriteRune(r)
+		}
 	}
-	return output, nil
+	return output.String(), nil
+
 }
