@@ -8,6 +8,7 @@ require (
 	github.com/gocolly/colly v1.2.0
 	github.com/google/uuid v1.6.0
 	github.com/jackskj/carta v0.2.0
+	github.com/kljensen/snowball v0.10.0
 	github.com/stroiman/go-automapper v0.0.0-20200419053654-7c63d5bb0eb4
 )
 

@@ -1,10 +1,10 @@
 package usecase
 
 import (
+	"regexp"
 	"strings"
 	"unicode/utf8"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/google/uuid"
 	"webscraper-go/web-scraping/domain"
 )
@@ -91,7 +91,10 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 	for _, notExistingResult := range notExistingResults {
 		id := uuid.New().String()
 		*lastNumber = *lastNumber + 1
-		contentCleaned := extractText(notExistingResult.Content)
+		contentCleaned, errClean := extractText(notExistingResult.Content)
+		if errClean != nil {
+			break
+		}
 		contentUtf8, errUt8 := convertToUTF8(contentCleaned)
 		if errUt8 != nil {
 			break
@@ -110,12 +113,27 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 	return true, nil
 }
 
-func extractText(htmlContent string) string {
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
-	if err != nil {
-		panic(err)
-	}
-	return doc.Text()
+// extractText removes HTML, CSS, and JavaScript and returns the clean content.
+func extractText(htmlContent string) (string, error) {
+	// 1. Eliminar el contenido dentro de las etiquetas <script> y <style>
+	reScript := regexp.MustCompile(`(?s)<script.*?>.*?</script>`)
+	htmlWithoutScript := reScript.ReplaceAllString(htmlContent, "")
+
+	reStyle := regexp.MustCompile(`(?s)<style.*?>.*?</style>`)
+	htmlWithoutCSS := reStyle.ReplaceAllString(htmlWithoutScript, "")
+
+	// 2. Eliminar todas las etiquetas HTML restantes
+	reTags := regexp.MustCompile(`<[^>]*>`)
+	textWithoutTags := reTags.ReplaceAllString(htmlWithoutCSS, "")
+
+	// 3. Sustituir múltiples espacios en blanco y saltos de línea
+	reSpaces := regexp.MustCompile(`\s{2,}`)
+	cleanedText := reSpaces.ReplaceAllString(textWithoutTags, " ")
+
+	// 4. Eliminar los espacios en blanco adicionales al inicio y final
+	cleanedText = strings.TrimSpace(cleanedText)
+
+	return cleanedText, nil
 }
 
 func convertToUTF8(input string) (string, error) {

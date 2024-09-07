@@ -1,31 +1,11 @@
 package domain
 
-// Harasser Class: Harasser
-type Harasser struct {
-	Username       string
-	History        []string
-	Location       string
-	HarassmentFreq int
+type OntologyClass struct {
+	Name    string
+	Objects []OntologyObject
 }
 
-// Victim Class: Victim
-type Victim struct {
-	Username       string
-	HarassmentHist []string
-	EmotionalState string
-}
-
-// Message Class: Message
-type Message struct {
-	Content        string
-	SentDate       string
-	HarassmentType string
-	Severity       string
-}
-
-// Context Class: Context
-type Context struct {
-	CommunicationChannel string
-	VirtualLocation      string
-	SentTime             string
+type OntologyObject struct {
+	Name       string
+	Attributes []string
 }
