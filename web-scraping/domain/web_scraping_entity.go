@@ -8,10 +8,13 @@ type SearchResult struct {
 }
 
 type CreateRecordWebScraping struct {
-	Title   string `json:"title"`
-	Url     string `json:"url"`
-	Content string `json:"content"`
-	Number  int    `json:"number"`
+	Title         string `json:"title"`
+	Url           string `json:"url"`
+	Content       string `json:"content"`
+	Number        int    `json:"number"`
+	TitleCorpus   string `json:"title_corpus"`
+	ContentCorpus string `json:"content_corpus"`
+	WordKey       string `json:"word_key"`
 }
 
 type UpdateRecordWebScraping struct {

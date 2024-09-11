@@ -1,13 +1,15 @@
-package migrate_topics
+package main
 
 import (
 	"database/sql"
 	"fmt"
 	"github.com/google/uuid"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
-func migrateTopic() {
+func main() {
 	topics := []string{
 		"historias cortas de acoso",
 		"relatos de víctimas de acoso",
@@ -93,4 +95,5 @@ func migrateTopic() {
 		}
 
 	}
+	fmt.Println("Se han migrado los temas correctamente.")
 }

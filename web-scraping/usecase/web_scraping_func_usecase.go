@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/uuid"
+
 	"webscraper-go/web-scraping/domain"
 )
 
@@ -57,6 +58,14 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 			continue
 		}
 
+		if strings.Contains(result.Url, "youtube") {
+			continue
+		}
+
+		if strings.Contains(result.Content, "404") {
+			continue
+		}
+
 		seenMap[result.Url] = domain.NewRecordWebScraping{
 			Title:   result.Title,
 			Url:     result.Url,
@@ -91,6 +100,8 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 	for _, notExistingResult := range notExistingResults {
 		id := uuid.New().String()
 		*lastNumber = *lastNumber + 1
+
+		// Limpiar y procesar contenido
 		contentCleaned, errClean := extractText(notExistingResult.Content)
 		if errClean != nil {
 			break
@@ -99,11 +110,31 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 		if errUt8 != nil {
 			break
 		}
+
+		// Eliminar espacios en blanco al principio y al final
+		cleanStopWords := strings.TrimSpace(stopWords)
+		// Dividir la constante en una slice de strings usando salto de línea como delimitador
+		stopWordsList := strings.Split(cleanStopWords, "\n")
+
+		// Procesar título y contenido con PLN
+		titleTokens := tokenize(notExistingResult.Title, stopWordsList)
+		contentTokens := tokenize(contentUtf8, stopWordsList)
+
+		// Obtener la palabra clave más relevante
+		documents := [][]string{titleTokens, contentTokens}
+		wordKey, err := getKeyword(contentUtf8, documents, stopWordsList)
+		if err != nil {
+			break
+		}
+
 		body := domain.CreateRecordWebScraping{
-			Title:   notExistingResult.Title,
-			Url:     notExistingResult.Url,
-			Content: contentUtf8,
-			Number:  *lastNumber,
+			Title:         notExistingResult.Title,
+			Url:           notExistingResult.Url,
+			Content:       contentUtf8,
+			Number:        *lastNumber,
+			TitleCorpus:   strings.Join(titleTokens, " "),
+			ContentCorpus: strings.Join(contentTokens, " "),
+			WordKey:       wordKey,
 		}
 		_, errCreateNewRecord := u.WebScrapingRepository.CreateRecord(id, projectId, body)
 		if errCreateNewRecord != nil {
@@ -113,24 +144,32 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 	return true, nil
 }
 
-// extractText removes HTML, CSS, and JavaScript and returns the clean content.
+// extractText removes HTML, CSS, JavaScript, and unwanted words from the content.
 func extractText(htmlContent string) (string, error) {
-	// 1. Eliminar el contenido dentro de las etiquetas <script> y <style>
+	// 1. Remove content inside <script> and <style> tags
 	reScript := regexp.MustCompile(`(?s)<script.*?>.*?</script>`)
 	htmlWithoutScript := reScript.ReplaceAllString(htmlContent, "")
 
 	reStyle := regexp.MustCompile(`(?s)<style.*?>.*?</style>`)
 	htmlWithoutCSS := reStyle.ReplaceAllString(htmlWithoutScript, "")
 
-	// 2. Eliminar todas las etiquetas HTML restantes
+	// 2. Remove all remaining HTML tags
 	reTags := regexp.MustCompile(`<[^>]*>`)
 	textWithoutTags := reTags.ReplaceAllString(htmlWithoutCSS, "")
 
-	// 3. Sustituir múltiples espacios en blanco y saltos de línea
-	reSpaces := regexp.MustCompile(`\s{2,}`)
-	cleanedText := reSpaces.ReplaceAllString(textWithoutTags, " ")
+	// 3. Replace multiple whitespace and newline characters with a single space
+	reSpaces := regexp.MustCompile(`\s+`)
+	textWithSingleSpaces := reSpaces.ReplaceAllString(textWithoutTags, " ")
 
-	// 4. Eliminar los espacios en blanco adicionales al inicio y final
+	// 4. Remove leading and trailing whitespace
+	cleanedText := strings.TrimSpace(textWithSingleSpaces)
+
+	// 5. Remove unwanted words
+	reRemoveWords := regexp.MustCompile(removeWords)
+	cleanedText = reRemoveWords.ReplaceAllString(cleanedText, "")
+
+	// 6. Final cleanup for extra spaces after removing words
+	cleanedText = reSpaces.ReplaceAllString(cleanedText, " ")
 	cleanedText = strings.TrimSpace(cleanedText)
 
 	return cleanedText, nil
