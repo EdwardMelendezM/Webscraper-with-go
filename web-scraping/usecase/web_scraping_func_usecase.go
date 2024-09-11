@@ -122,8 +122,8 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 
 		// Obtener la palabra clave más relevante
 		documents := [][]string{titleTokens, contentTokens}
-		wordKey, err := getKeyword(contentUtf8, documents, stopWordsList)
-		if err != nil {
+		wordKey, errGetKeyWord := getKeyword(contentUtf8, documents, stopWordsList)
+		if errGetKeyWord != nil {
 			break
 		}
 
@@ -132,8 +132,8 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 			Url:           notExistingResult.Url,
 			Content:       contentUtf8,
 			Number:        *lastNumber,
-			TitleCorpus:   strings.Join(titleTokens, " "),
-			ContentCorpus: strings.Join(contentTokens, " "),
+			TitleCorpus:   strings.Join(titleTokens, ","),
+			ContentCorpus: strings.Join(contentTokens, ","),
 			WordKey:       wordKey,
 		}
 		_, errCreateNewRecord := u.WebScrapingRepository.CreateRecord(id, projectId, body)
