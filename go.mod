@@ -13,7 +13,10 @@ require (
 	github.com/stroiman/go-automapper v0.0.0-20200419053654-7c63d5bb0eb4
 )
 
-require github.com/playwright-community/playwright-go v0.4700.0
+require (
+	github.com/neo4j/neo4j-go-driver/v4 v4.4.7
+	github.com/playwright-community/playwright-go v0.4700.0
+)
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
