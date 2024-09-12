@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"regexp"
 	"strings"
@@ -17,7 +18,8 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 
 	results := make([]domain.SearchResult, 0)
 
-	for _, topic := range topics {
+	for index, topic := range topics {
+		fmt.Printf(":=> Number: %d\n", index+1)
 		u.WebScrapingCollectRepository.CollectSearchResults(topic.Title, &results)
 	}
 
