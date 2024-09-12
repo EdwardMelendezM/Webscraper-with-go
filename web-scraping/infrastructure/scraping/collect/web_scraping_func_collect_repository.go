@@ -3,6 +3,7 @@ package collect
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -74,6 +75,29 @@ func (r WebScrapingCollectRepository) CollectSearchResults(
 	if err != nil {
 		fmt.Println("Error visiting URL: ", searchURL)
 	}
+}
+
+func extractContent(link string) {
+	contentCollector := colly.NewCollector()
+
+	// User-Agent para evitar bloqueos
+	contentCollector.OnRequest(func(r *colly.Request) {
+		r.Headers.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")
+	})
+
+	// Extraer el contenido de la página
+	contentCollector.OnHTML("body", func(e *colly.HTMLElement) {
+		content := e.Text
+		fmt.Printf("Contenido de la página: %s\n", content)
+	})
+
+	err := contentCollector.Visit(link)
+	if err != nil {
+		log.Printf("Error al visitar: %s", link)
+	}
+
+	// Pausa para evitar bloqueos
+	time.Sleep(2 * time.Second)
 }
 
 // Helper function to clean up text

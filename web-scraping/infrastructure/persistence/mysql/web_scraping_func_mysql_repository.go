@@ -71,6 +71,9 @@ func (r WebScrapingMysqlRepo) CreateRecord(
 		body.Url,
 		body.Content,
 		body.Number,
+		body.TitleCorpus,
+		body.ContentCorpus,
+		body.WordKey,
 		now,
 	)
 	if err != nil {

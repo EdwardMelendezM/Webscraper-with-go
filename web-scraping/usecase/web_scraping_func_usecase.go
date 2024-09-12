@@ -1,11 +1,9 @@
 package usecase
 
 import (
+	"github.com/google/uuid"
 	"regexp"
 	"strings"
-	"unicode/utf8"
-
-	"github.com/google/uuid"
 
 	"webscraper-go/web-scraping/domain"
 )
@@ -66,6 +64,22 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 			continue
 		}
 
+		if strings.Contains(result.Content, "403") {
+			continue
+		}
+
+		if strings.Contains(result.Content, "Just a moment...") {
+			continue
+		}
+
+		if strings.Contains(result.Content, "Oops, something went wrong") {
+			continue
+		}
+
+		if strings.Contains(result.Content, "Sorry, you have been blocked") {
+			continue
+		}
+
 		seenMap[result.Url] = domain.NewRecordWebScraping{
 			Title:   result.Title,
 			Url:     result.Url,
@@ -106,23 +120,14 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 		if errClean != nil {
 			break
 		}
-		contentUtf8, errUt8 := convertToUTF8(contentCleaned)
-		if errUt8 != nil {
-			break
-		}
-
-		// Eliminar espacios en blanco al principio y al final
-		cleanStopWords := strings.TrimSpace(stopWords)
-		// Dividir la constante en una slice de strings usando salto de línea como delimitador
-		stopWordsList := strings.Split(cleanStopWords, "\n")
 
 		// Procesar título y contenido con PLN
-		titleTokens := tokenize(notExistingResult.Title, stopWordsList)
-		contentTokens := tokenize(contentUtf8, stopWordsList)
+		titleTokens := tokenize(notExistingResult.Title)
+		contentTokens := tokenize(contentCleaned)
 
 		// Obtener la palabra clave más relevante
 		documents := [][]string{titleTokens, contentTokens}
-		wordKey, errGetKeyWord := getKeyword(contentUtf8, documents, stopWordsList)
+		wordKey, errGetKeyWord := getKeyword(contentCleaned, documents)
 		if errGetKeyWord != nil {
 			break
 		}
@@ -130,11 +135,14 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 		body := domain.CreateRecordWebScraping{
 			Title:         notExistingResult.Title,
 			Url:           notExistingResult.Url,
-			Content:       contentUtf8,
+			Content:       contentCleaned,
 			Number:        *lastNumber,
 			TitleCorpus:   strings.Join(titleTokens, ","),
 			ContentCorpus: strings.Join(contentTokens, ","),
 			WordKey:       wordKey,
+		}
+		if body.Content == "" || body.Title == "" {
+			continue
 		}
 		_, errCreateNewRecord := u.WebScrapingRepository.CreateRecord(id, projectId, body)
 		if errCreateNewRecord != nil {
@@ -158,31 +166,50 @@ func extractText(htmlContent string) (string, error) {
 	textWithoutTags := reTags.ReplaceAllString(htmlWithoutCSS, "")
 
 	// 3. Replace multiple whitespace and newline characters with a single space
+	cleanText2 := cleanText(textWithoutTags)
 	reSpaces := regexp.MustCompile(`\s+`)
-	textWithSingleSpaces := reSpaces.ReplaceAllString(textWithoutTags, " ")
+	textWithSingleSpaces := reSpaces.ReplaceAllString(cleanText2, " ")
 
 	// 4. Remove leading and trailing whitespace
 	cleanedText := strings.TrimSpace(textWithSingleSpaces)
 
-	// 5. Remove unwanted words
-	reRemoveWords := regexp.MustCompile(removeWords)
-	cleanedText = reRemoveWords.ReplaceAllString(cleanedText, "")
-
-	// 6. Final cleanup for extra spaces after removing words
+	// 5. Final cleanup for extra spaces after removing words
 	cleanedText = reSpaces.ReplaceAllString(cleanedText, " ")
 	cleanedText = strings.TrimSpace(cleanedText)
 
 	return cleanedText, nil
 }
 
-func convertToUTF8(input string) (string, error) {
-	var output strings.Builder
-	for _, r := range input {
-		// Verifica si el carácter es válido en UTF-8
-		if utf8.ValidRune(r) {
-			output.WriteRune(r)
+// cleanText elimina secciones del texto si alguna línea en la sección tiene menos de 4 palabras.
+func cleanText(text string) string {
+	// Expresión regular para dividir el texto en secciones basadas en múltiples saltos de línea
+	re := regexp.MustCompile(`(?m)(?:\n\s*){2,}`) // Coincide con dos o más saltos de línea
+
+	// Dividir el texto en secciones usando la expresión regular
+	sections := re.Split(text, -1)
+
+	var cleanedSections []string
+
+	for _, section := range sections {
+		section = strings.TrimSpace(section) // Eliminar espacios en blanco
+		if isValidSection(section) {
+			cleanedSections = append(cleanedSections, section)
 		}
 	}
-	return output.String(), nil
 
+	// Unir todas las secciones válidas en el texto final
+	return strings.Join(cleanedSections, "\n\n")
+}
+
+// isValidSection verifica si una sección es válida según la longitud de sus palabras en cada línea
+func isValidSection(section string) bool {
+	lines := strings.Split(section, "\n")
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line) // Eliminar espacios en blanco
+		if len(strings.Fields(line)) < 4 {
+			return false
+		}
+	}
+	return true
 }

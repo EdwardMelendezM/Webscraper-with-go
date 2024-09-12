@@ -1,9 +1,12 @@
 package usecase
 
 import (
+	"github.com/bbalet/stopwords"
 	"math"
 	"regexp"
 	"strings"
+
+	"github.com/kljensen/snowball"
 )
 
 // Calcular TF-IDF para un conjunto de documentos
@@ -14,9 +17,9 @@ func calculateTFIDF(term string, document []string, documents [][]string) float6
 }
 
 // Obtener la palabra clave más relevante de un texto
-func getKeyword(text string, documents [][]string, stopWords []string) (string, error) {
+func getKeyword(text string, documents [][]string) (string, error) {
 	// Tokenizar el texto
-	tokens := tokenize(text, stopWords)
+	tokens := tokenize(text)
 
 	if len(tokens) == 0 {
 		return "", nil
@@ -42,28 +45,37 @@ func getKeyword(text string, documents [][]string, stopWords []string) (string, 
 	return keyword, nil
 }
 
-// Tokenizer function with punctuation handling, normalization, and stop word removal
-func tokenize(text string, stopWords []string) []string {
-	// Eliminar puntuación y normalizar texto
-	re := regexp.MustCompile(`[^\w\s]`)
-	text = re.ReplaceAllString(text, "")
-	text = strings.ToLower(text)
+// Tokenizer function with punctuation handling, normalization, stop word removal, and stemming
+func tokenize(text string) []string {
+	cleanStopWords := strings.TrimSpace(stopWords)
+	stopWordsList := strings.Split(cleanStopWords, "\n")
 
-	// Tokenizar y eliminar stop words
-	words := strings.Fields(text)
+	textWithoutStopWords := stopwords.CleanString(text, "es", true)
+
+	re := regexp.MustCompile(`[^\p{L}\p{N}\s]`) // Solo mantener letras, números y espacios
+	textWithoutStopWords = re.ReplaceAllString(textWithoutStopWords, "")
+	textWithoutStopWords = strings.ToLower(textWithoutStopWords)
+
+	words := strings.Fields(textWithoutStopWords)
 	tokens := []string{}
 	for _, word := range words {
-		word = strings.ToLower(word)
-		if !contains(stopWords, word) && len(word) > 1 { // También eliminamos palabras muy cortas
-			tokens = append(tokens, word)
+		word = strings.TrimSpace(word)
+		// No agregar palabras vacías ni stop words
+		if word != "" && !contains(stopWordsList, word) {
+			// Aplicar stemming
+			stemmed, err := snowball.Stem(word, "spanish", true)
+			if err != nil {
+				return nil
+			}
+			tokens = append(tokens, stemmed)
 		}
 	}
 	return tokens
 }
 
-// Helper function to check if a term is contained in a document
-func contains(document []string, term string) bool {
-	for _, word := range document {
+// Helper function to check if a term is contained in a list
+func contains(list []string, term string) bool {
+	for _, word := range list {
 		if word == term {
 			return true
 		}
@@ -111,226 +123,15 @@ const (
         \b(ayuda|soporte|preguntas frecuentes|faq|términos y condiciones|condiciones de uso|política de privacidad|asistencia|guía|manual|tutorial)\b|`
 
 	stopWords = `
-a
-abajo
-acerca
-adelante
-además
-adentro
-aquel
-aquella
-aquello
-aquí
-arriba
-así
-atras
-bajo
-bien
-cada
-cerca
-cierto
-como
-con
-cuál
-cuya
-dentro
-de
-del
-desde
-donde
-el
-ella
-ellos
-en
-encima
-ese
-esa
-eso
-este
-esta
-esto
-fue
-gran
-hacia
-hasta
-hay
-la
-lo
-los
-me
-mi
-mis
-muy
-nada
-ni
-no
-nos
-nuestra
-nuestro
+y
 o
-para
-pero
-por
-que
-quien
-se
-sin
-sobre
-su
-sus
-también
-tan
-te
-ti
-todo
-todos
-tu
-tus
-un
-una
-uno
-usted
-van
-varios
-ve
-vez
-yo
-abajo
-además
-al
-algún
-alguna
-alguno
-algunos
-amigo
-antes
-bajo
-bien
-cada
-cerca
-cierto
-como
-cuánto
-de
-debe
-dicha
-dicen
-donde
-estado
-estoy
-evidentemente
-hasta
-igual
-llevar
-luego
-más
-me
-mí
-nunca
-poco
-por
-puede
-sabemos
-sabe
-ser
-si
-sobre
-tan
-tanto
-todas
-todo
-tu
-usted
-vale
-ver
-vosotros
-y
-ya
-acerca
-al
-algun
-alguna
-alguno
-algunos
-bajo
-bien
-cada
-con
-cuál
-cuál
-dentro
-donde
-es
-este
-final
-fue
-grande
-gente
-hemos
-igual
-largo
-menos
-nuestra
-nuestro
-poca
-poco
-por
-pues
-que
-quien
-según
-ser
-si
-solo
-toda
-todo
-tu
-usted
-vosotros
-y
-ya
-adicional
-agregar
-ahora
-algunos
-apenas
-aún
-bastante
-cada
-casi
-como
-constantemente
-debería
-después
-donde
-durante
+n
+quotte
+accesibilidad
+saltar
+era
+antildeos
 en
-entonces
-esos
-hasta
-independientemente
-información
-incluso
-inmediato
-interiormente
-nuevamente
-últimamente
-principalmente
-próximamente
-pues
-rápidamente
-realmente
-recientemente
-repetidamente
-resumidamente
-sus
-tampoco
-temprano
-tendencia
-último
-varias
-varios
-visible
-voluntariamente
+nº
 `
 )
