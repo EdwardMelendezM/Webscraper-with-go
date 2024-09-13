@@ -14,7 +14,7 @@ require (
 )
 
 require (
-	github.com/neo4j/neo4j-go-driver/v4 v4.4.7
+	github.com/neo4j/neo4j-go-driver/v5 v5.24.0
 	github.com/playwright-community/playwright-go v0.4700.0
 )
 
