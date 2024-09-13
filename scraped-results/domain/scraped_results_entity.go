@@ -168,7 +168,7 @@ type SemanticOntologyCountResult struct {
 	Infantil        float64 `bson:"infantil"`
 	Menor           float64 `bson:"menor"`
 	Muchacho        float64 `bson:"muchacho"`
-	Nina            float64 `bson:"nina"`
+	Nina            float64 `bson:"niña"`
 	Reiterado       float64 `bson:"reiterado"`
 	Repetitivo      float64 `bson:"repetitivo"`
 	Frecuente       float64 `bson:"frecuente"`
@@ -368,7 +368,7 @@ type SemanticOntologyTfIdfResult struct {
 	Infantil        float64 `bson:"infantil"`
 	Menor           float64 `bson:"menor"`
 	Muchacho        float64 `bson:"muchacho"`
-	Nina            float64 `bson:"nina"`
+	Nina            float64 `bson:"niña"`
 	Reiterado       float64 `bson:"reiterado"`
 	Repetitivo      float64 `bson:"repetitivo"`
 	Frecuente       float64 `bson:"frecuente"`
