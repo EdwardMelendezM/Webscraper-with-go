@@ -44,8 +44,11 @@ func (r WebScrapingCollectRepository) CollectSearchResults(
 		if title != "" && url != "" {
 			cleanedURL := cleanURL(url)
 
+			client := &http.Client{
+				Timeout: 8 * time.Second,
+			}
 			// Fetch the content from the URL
-			resp, err := http.Get(cleanedURL)
+			resp, err := client.Get(cleanedURL)
 			if err != nil {
 				fmt.Printf("Error downloading content from %s: %v\n", cleanedURL, err)
 				return

@@ -39,7 +39,7 @@ type SemanticOntologyCountResult struct {
 	Autoestima      float64 `bson:"autoestima"`
 	Ciberbullying   float64 `bson:"ciberbullying"`
 	Daño            float64 `bson:"daño"`
-	Depresion       float64 `bson:"depresion"`
+	Depresion       float64 `bson:"depresión"`
 	Estres          float64 `bson:"estres"`
 	Hostigar        float64 `bson:"hostigar"`
 	Humillar        float64 `bson:"humillar"`
@@ -61,7 +61,7 @@ type SemanticOntologyCountResult struct {
 	Cyberbullying   float64 `bson:"cyberbullying"`
 	Denigrante      float64 `bson:"denigrante"`
 	Divulgar        float64 `bson:"divulgar"`
-	Emocion         float64 `bson:"emocion"`
+	Emocion         float64 `bson:"emoción"`
 	Espiar          float64 `bson:"espiar"`
 	Falso           float64 `bson:"falso"`
 	Humor           float64 `bson:"humor"`
@@ -70,7 +70,7 @@ type SemanticOntologyCountResult struct {
 	Lastimar        float64 `bson:"lastimar"`
 	Maltrato        float64 `bson:"maltrato"`
 	Poder           float64 `bson:"poder"`
-	Reputacion      float64 `bson:"reputacion"`
+	Reputacion      float64 `bson:"reputación"`
 	Sexual          float64 `bson:"sexual"`
 	Bullying        float64 `bson:"bullying"`
 	Venganza        float64 `bson:"venganza"`
@@ -81,21 +81,21 @@ type SemanticOntologyCountResult struct {
 	Chat            float64 `bson:"chat"`
 	Correo          float64 `bson:"correo"`
 	Digital         float64 `bson:"digital"`
-	Electronico     float64 `bson:"electronico"`
+	Electronico     float64 `bson:"electrónico"`
 	Facebook        float64 `bson:"facebook"`
-	Fotografia      float64 `bson:"fotografia"`
-	Grabacion       float64 `bson:"grabacion"`
+	Fotografia      float64 `bson:"fotografía"`
+	Grabacion       float64 `bson:"grabación"`
 	Internet        float64 `bson:"internet"`
 	Mensaje         float64 `bson:"mensaje"`
 	Movil           float64 `bson:"movil"`
 	Pagina          float64 `bson:"pagina"`
-	Tecnologia      float64 `bson:"tecnologia"`
-	Telefono        float64 `bson:"telefono"`
+	Tecnologia      float64 `bson:"tecnología"`
+	Telefono        float64 `bson:"teléfono"`
 	Texto           float64 `bson:"texto"`
 	Video           float64 `bson:"video"`
 	Web             float64 `bson:"web"`
 	Youtube         float64 `bson:"youtube"`
-	Cibernetico     float64 `bson:"cibernetico"`
+	Cibernetico     float64 `bson:"cibernético"`
 	Foto            float64 `bson:"foto"`
 	Imagen          float64 `bson:"imagen"`
 	Red             float64 `bson:"red"`
@@ -115,15 +115,16 @@ type SemanticOntologyCountResult struct {
 	Primaria        float64 `bson:"primaria"`
 	Secundaria      float64 `bson:"secundaria"`
 	Academia        float64 `bson:"academia"`
-	Alumnos         float64 `bson:"alumnos"`
+	Alumno          float64 `bson:"alumno"`
+	Alumna          float64 `bson:"alumna"`
 	Bachillerato    float64 `bson:"bachillerato"`
 	Colegio         float64 `bson:"colegio"`
-	Educacion       float64 `bson:"educacion"`
+	Educacion       float64 `bson:"educación"`
 	Educativo       float64 `bson:"educativo"`
 	Escolar         float64 `bson:"escolar"`
 	Estudiante      float64 `bson:"estudiante"`
 	Facultad        float64 `bson:"facultad"`
-	Institucion     float64 `bson:"institucion"`
+	Institucion     float64 `bson:"institución"`
 	Maestro         float64 `bson:"maestro"`
 	Profesor        float64 `bson:"profesor"`
 	Universidad     float64 `bson:"universidad"`
@@ -138,10 +139,10 @@ type SemanticOntologyCountResult struct {
 	Acosador        float64 `bson:"acosador"`
 	Agresor         float64 `bson:"agresor"`
 	Testigos        float64 `bson:"testigos"`
-	Victima         float64 `bson:"victima"`
+	Victima         float64 `bson:"víctima"`
 	Atormentador    float64 `bson:"atormentador"`
 	Bully           float64 `bson:"bully"`
-	Complice        float64 `bson:"complice"`
+	Complice        float64 `bson:"cómplice"`
 	Grupo           float64 `bson:"grupo"`
 	Maton           float64 `bson:"maton"`
 	Matoneo         float64 `bson:"matoneo"`
@@ -153,10 +154,10 @@ type SemanticOntologyCountResult struct {
 	Mujer           float64 `bson:"mujer"`
 	Madre           float64 `bson:"madre"`
 	Hombre          float64 `bson:"hombre"`
-	Companero       float64 `bson:"companero"`
-	Companera       float64 `bson:"companera"`
+	Companero       float64 `bson:"compañero"`
+	Companera       float64 `bson:"compañera"`
 	Adulto          float64 `bson:"adulto"`
-	Espia           float64 `bson:"espia"`
+	Espia           float64 `bson:"espía"`
 	Supervisor      float64 `bson:"supervisor"`
 	Adolescente     float64 `bson:"adolescente"`
 	Joven           float64 `bson:"joven"`
@@ -171,7 +172,7 @@ type SemanticOntologyCountResult struct {
 	Reiterado       float64 `bson:"reiterado"`
 	Repetitivo      float64 `bson:"repetitivo"`
 	Frecuente       float64 `bson:"frecuente"`
-	Ano             float64 `bson:"ano"`
+	Ano             float64 `bson:"año"`
 	Constante       float64 `bson:"constante"`
 	Continuo        float64 `bson:"continuo"`
 	Creciente       float64 `bson:"creciente"`
@@ -180,28 +181,27 @@ type SemanticOntologyCountResult struct {
 	Menudo          float64 `bson:"menudo"`
 	Mes             float64 `bson:"mes"`
 	Periodico       float64 `bson:"periodico"`
-	Persecucion     float64 `bson:"persecucion"`
+	Persecucion     float64 `bson:"persecución"`
 	Perseguir       float64 `bson:"perseguir"`
 	Persistente     float64 `bson:"persistente"`
 	Recurrente      float64 `bson:"recurrente"`
-	Repeticion      float64 `bson:"repeticion"`
+	Repeticion      float64 `bson:"repetición"`
 	Repetido        float64 `bson:"repetido"`
 	Seguimiento     float64 `bson:"seguimiento"`
 	Semanas         float64 `bson:"semanas"`
 	Tiempo          float64 `bson:"tiempo"`
 	Ocasional       float64 `bson:"ocasional"`
 	Psicoterapia    float64 `bson:"psicoterapia"`
-	Colaboracion    float64 `bson:"colaboracion"`
+	Colaboracion    float64 `bson:"colaboración"`
 	Conciencia      float64 `bson:"conciencia"`
-	Equilibrio      float64 `bson:"equilibrio"`
-	Identificacion  float64 `bson:"identificacion"`
-	Mediacion       float64 `bson:"mediacion"`
-	Orientacion     float64 `bson:"orientacion"`
-	Prevencion      float64 `bson:"prevencion"`
-	Sanacion        float64 `bson:"sanacion"`
-	Sensibilizacion float64 `bson:"sensibilizacion"`
+	Identificacion  float64 `bson:"identificación"`
+	Mediacion       float64 `bson:"mediación"`
+	Orientacion     float64 `bson:"orientación"`
+	Prevencion      float64 `bson:"prevención"`
+	Sanacion        float64 `bson:"sanación"`
+	Sensibilizacion float64 `bson:"sensibilización"`
 	Terapia         float64 `bson:"terapia"`
-	Autoproteccion  float64 `bson:"autoproteccion"`
+	Autoproteccion  float64 `bson:"autoprotección"`
 	Establecer      float64 `bson:"establecer"`
 	Ciberbulling    float64 `bson:"ciberbulling"`
 	Sextorsion      float64 `bson:"sextorsion"`
@@ -215,12 +215,12 @@ type SemanticOntologyCountResult struct {
 	Familiar        float64 `bson:"familiar"`
 	Colectivo       float64 `bson:"colectivo"`
 	Exclusion       float64 `bson:"exclusion"`
-	Suplantacion    float64 `bson:"suplantacion"`
-	Denigracion     float64 `bson:"denigracion"`
+	Suplantacion    float64 `bson:"suplantación"`
+	Denigracion     float64 `bson:"denigración"`
 	Sonsacamiento   float64 `bson:"sonsacamiento"`
 	Doxxing         float64 `bson:"doxxing"`
 	Ciberstalking   float64 `bson:"ciberstalking"`
-	Dia             float64 `bson:"dia"`
+	Dia             float64 `bson:"día"`
 	Noche           float64 `bson:"noche"`
 	Correcto        int     `bson:"correcto"`
 	DeletedAt       bool    `bson:"deleted_at"`
@@ -239,7 +239,7 @@ type SemanticOntologyTfIdfResult struct {
 	Autoestima      float64 `bson:"autoestima"`
 	Ciberbullying   float64 `bson:"ciberbullying"`
 	Daño            float64 `bson:"daño"`
-	Depresion       float64 `bson:"depresion"`
+	Depresion       float64 `bson:"depresión"`
 	Estres          float64 `bson:"estres"`
 	Hostigar        float64 `bson:"hostigar"`
 	Humillar        float64 `bson:"humillar"`
@@ -261,7 +261,7 @@ type SemanticOntologyTfIdfResult struct {
 	Cyberbullying   float64 `bson:"cyberbullying"`
 	Denigrante      float64 `bson:"denigrante"`
 	Divulgar        float64 `bson:"divulgar"`
-	Emocion         float64 `bson:"emocion"`
+	Emocion         float64 `bson:"emoción"`
 	Espiar          float64 `bson:"espiar"`
 	Falso           float64 `bson:"falso"`
 	Humor           float64 `bson:"humor"`
@@ -270,7 +270,7 @@ type SemanticOntologyTfIdfResult struct {
 	Lastimar        float64 `bson:"lastimar"`
 	Maltrato        float64 `bson:"maltrato"`
 	Poder           float64 `bson:"poder"`
-	Reputacion      float64 `bson:"reputacion"`
+	Reputacion      float64 `bson:"reputación"`
 	Sexual          float64 `bson:"sexual"`
 	Bullying        float64 `bson:"bullying"`
 	Venganza        float64 `bson:"venganza"`
@@ -281,21 +281,21 @@ type SemanticOntologyTfIdfResult struct {
 	Chat            float64 `bson:"chat"`
 	Correo          float64 `bson:"correo"`
 	Digital         float64 `bson:"digital"`
-	Electronico     float64 `bson:"electronico"`
+	Electronico     float64 `bson:"electrónico"`
 	Facebook        float64 `bson:"facebook"`
-	Fotografia      float64 `bson:"fotografia"`
-	Grabacion       float64 `bson:"grabacion"`
+	Fotografia      float64 `bson:"fotografía"`
+	Grabacion       float64 `bson:"grabación"`
 	Internet        float64 `bson:"internet"`
 	Mensaje         float64 `bson:"mensaje"`
 	Movil           float64 `bson:"movil"`
 	Pagina          float64 `bson:"pagina"`
-	Tecnologia      float64 `bson:"tecnologia"`
-	Telefono        float64 `bson:"telefono"`
+	Tecnologia      float64 `bson:"tecnología"`
+	Telefono        float64 `bson:"teléfono"`
 	Texto           float64 `bson:"texto"`
 	Video           float64 `bson:"video"`
 	Web             float64 `bson:"web"`
 	Youtube         float64 `bson:"youtube"`
-	Cibernetico     float64 `bson:"cibernetico"`
+	Cibernetico     float64 `bson:"cibernético"`
 	Foto            float64 `bson:"foto"`
 	Imagen          float64 `bson:"imagen"`
 	Red             float64 `bson:"red"`
@@ -315,15 +315,16 @@ type SemanticOntologyTfIdfResult struct {
 	Primaria        float64 `bson:"primaria"`
 	Secundaria      float64 `bson:"secundaria"`
 	Academia        float64 `bson:"academia"`
-	Alumnos         float64 `bson:"alumnos"`
+	Alumno          float64 `bson:"alumno"`
+	Alumna          float64 `bson:"alumna"`
 	Bachillerato    float64 `bson:"bachillerato"`
 	Colegio         float64 `bson:"colegio"`
-	Educacion       float64 `bson:"educacion"`
+	Educacion       float64 `bson:"educación"`
 	Educativo       float64 `bson:"educativo"`
 	Escolar         float64 `bson:"escolar"`
 	Estudiante      float64 `bson:"estudiante"`
 	Facultad        float64 `bson:"facultad"`
-	Institucion     float64 `bson:"institucion"`
+	Institucion     float64 `bson:"institución"`
 	Maestro         float64 `bson:"maestro"`
 	Profesor        float64 `bson:"profesor"`
 	Universidad     float64 `bson:"universidad"`
@@ -338,10 +339,10 @@ type SemanticOntologyTfIdfResult struct {
 	Acosador        float64 `bson:"acosador"`
 	Agresor         float64 `bson:"agresor"`
 	Testigos        float64 `bson:"testigos"`
-	Victima         float64 `bson:"victima"`
+	Victima         float64 `bson:"víctima"`
 	Atormentador    float64 `bson:"atormentador"`
 	Bully           float64 `bson:"bully"`
-	Complice        float64 `bson:"complice"`
+	Complice        float64 `bson:"cómplice"`
 	Grupo           float64 `bson:"grupo"`
 	Maton           float64 `bson:"maton"`
 	Matoneo         float64 `bson:"matoneo"`
@@ -353,10 +354,10 @@ type SemanticOntologyTfIdfResult struct {
 	Mujer           float64 `bson:"mujer"`
 	Madre           float64 `bson:"madre"`
 	Hombre          float64 `bson:"hombre"`
-	Companero       float64 `bson:"companero"`
-	Companera       float64 `bson:"companera"`
+	Companero       float64 `bson:"compañero"`
+	Companera       float64 `bson:"compañera"`
 	Adulto          float64 `bson:"adulto"`
-	Espia           float64 `bson:"espia"`
+	Espia           float64 `bson:"espía"`
 	Supervisor      float64 `bson:"supervisor"`
 	Adolescente     float64 `bson:"adolescente"`
 	Joven           float64 `bson:"joven"`
@@ -380,28 +381,28 @@ type SemanticOntologyTfIdfResult struct {
 	Menudo          float64 `bson:"menudo"`
 	Mes             float64 `bson:"mes"`
 	Periodico       float64 `bson:"periodico"`
-	Persecucion     float64 `bson:"persecucion"`
+	Persecucion     float64 `bson:"persecución"`
 	Perseguir       float64 `bson:"perseguir"`
 	Persistente     float64 `bson:"persistente"`
 	Recurrente      float64 `bson:"recurrente"`
-	Repeticion      float64 `bson:"repeticion"`
+	Repeticion      float64 `bson:"repetición"`
 	Repetido        float64 `bson:"repetido"`
 	Seguimiento     float64 `bson:"seguimiento"`
 	Semanas         float64 `bson:"semanas"`
 	Tiempo          float64 `bson:"tiempo"`
 	Ocasional       float64 `bson:"ocasional"`
 	Psicoterapia    float64 `bson:"psicoterapia"`
-	Colaboracion    float64 `bson:"colaboracion"`
+	Colaboracion    float64 `bson:"colaboración"`
 	Conciencia      float64 `bson:"conciencia"`
 	Equilibrio      float64 `bson:"equilibrio"`
-	Identificacion  float64 `bson:"identificacion"`
-	Mediacion       float64 `bson:"mediacion"`
-	Orientacion     float64 `bson:"orientacion"`
-	Prevencion      float64 `bson:"prevencion"`
-	Sanacion        float64 `bson:"sanacion"`
-	Sensibilizacion float64 `bson:"sensibilizacion"`
+	Identificacion  float64 `bson:"identificación"`
+	Mediacion       float64 `bson:"mediación"`
+	Orientacion     float64 `bson:"orientación"`
+	Prevencion      float64 `bson:"prevención"`
+	Sanacion        float64 `bson:"sanación"`
+	Sensibilizacion float64 `bson:"sensibilización"`
 	Terapia         float64 `bson:"terapia"`
-	Autoproteccion  float64 `bson:"autoproteccion"`
+	Autoproteccion  float64 `bson:"autoprotección"`
 	Establecer      float64 `bson:"establecer"`
 	Ciberbulling    float64 `bson:"ciberbulling"`
 	Sextorsion      float64 `bson:"sextorsion"`
@@ -415,12 +416,12 @@ type SemanticOntologyTfIdfResult struct {
 	Familiar        float64 `bson:"familiar"`
 	Colectivo       float64 `bson:"colectivo"`
 	Exclusion       float64 `bson:"exclusion"`
-	Suplantacion    float64 `bson:"suplantacion"`
-	Denigracion     float64 `bson:"denigracion"`
+	Suplantacion    float64 `bson:"suplantación"`
+	Denigracion     float64 `bson:"denigración"`
 	Sonsacamiento   float64 `bson:"sonsacamiento"`
 	Doxxing         float64 `bson:"doxxing"`
 	Ciberstalking   float64 `bson:"ciberstalking"`
-	Dia             float64 `bson:"dia"`
+	Dia             float64 `bson:"día"`
 	Noche           float64 `bson:"noche"`
 	Correcto        int     `bson:"correcto"`
 	DeletedAt       bool    `bson:"deleted_at"`

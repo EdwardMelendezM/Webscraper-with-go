@@ -112,8 +112,12 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 		*lastNumber = 0
 	}
 
+	fmt.Printf("=== Start inserting new records ===\n")
 	// 5: Add new record notExistingResults
 	for _, notExistingResult := range notExistingResults {
+		if notExistingResult.Content == "" || notExistingResult.Title == "" {
+			continue
+		}
 		id := uuid.New().String()
 		*lastNumber = *lastNumber + 1
 
@@ -143,13 +147,11 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 			ContentCorpus: strings.Join(contentTokens, ","),
 			WordKey:       wordKey,
 		}
-		if body.Content == "" || body.Title == "" {
-			continue
-		}
 		_, errCreateNewRecord := u.WebScrapingRepository.CreateRecord(id, projectId, body)
 		if errCreateNewRecord != nil {
 			break
 		}
+		fmt.Printf("Number inserted: %d\n", *lastNumber)
 	}
 	return true, nil
 }
