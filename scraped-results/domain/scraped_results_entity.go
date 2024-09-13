@@ -222,6 +222,7 @@ type SemanticOntologyCountResult struct {
 	Ciberstalking   float64 `bson:"ciberstalking"`
 	Dia             float64 `bson:"dia"`
 	Noche           float64 `bson:"noche"`
+	Correcto        int     `bson:"correcto"`
 	DeletedAt       bool    `bson:"deleted_at"`
 }
 type SemanticOntologyTfIdfResult struct {
@@ -421,5 +422,6 @@ type SemanticOntologyTfIdfResult struct {
 	Ciberstalking   float64 `bson:"ciberstalking"`
 	Dia             float64 `bson:"dia"`
 	Noche           float64 `bson:"noche"`
+	Correcto        int     `bson:"correcto"`
 	DeletedAt       bool    `bson:"deleted_at"`
 }

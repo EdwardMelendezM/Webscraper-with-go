@@ -484,6 +484,13 @@ func main() {
 			wordToTfIdf[word] = calculateTfidfForWordInCorpus(word, corpus)
 		}
 
+		isCorrectValue := 1
+		if isCorrect(wordTf) == true {
+			isCorrectValue = 1
+		} else {
+			isCorrectValue = 0
+		}
+
 		createNewSemanticOntologyTfIdfResult := domain.SemanticOntologyTfIdfResult{
 			ProjectID:       scrapedResult.ProjectId,
 			Title:           scrapedResult.Title,
@@ -681,6 +688,8 @@ func main() {
 			Ciberstalking:   wordToTfIdf["ciberstalking"],
 			Dia:             wordToTfIdf["dia"],
 			Noche:           wordToTfIdf["noche"],
+			Correcto:        isCorrectValue,
+			DeletedAt:       false,
 		}
 
 		createNewSemanticOntologyCountResult := domain.SemanticOntologyCountResult{
@@ -880,6 +889,7 @@ func main() {
 			Ciberstalking:   wordTf["ciberstalking"],
 			Dia:             wordTf["dia"],
 			Noche:           wordTf["noche"],
+			Correcto:        isCorrectValue,
 			DeletedAt:       false,
 		}
 		_, errInsertTf := insertNewSemanticOntologyCount(client, createNewSemanticOntologyCountResult)
@@ -1037,4 +1047,51 @@ func top200Words(scrapedResults []domain.ScrapedResult) []string {
 	}
 
 	return topWords
+}
+
+func isCategoryPresent(wordTf map[string]float64, categoryWords []string) bool {
+	for _, word := range categoryWords {
+		if value, exists := wordTf[word]; exists && value != 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func isCorrect(wordTf map[string]float64) bool {
+	// Definir las palabras clave para cada categoría
+	factoresRiesgo := []string{
+		"agresivo", "aislamiento", "amenaza", "ansiedad", "ataque", "autoestima", "ciberbullying",
+		"daño", "depresion", "estres", "hostigar", "humillar", "insultos", "intimidar", "manipular",
+		"paranoia", "ridiculizar", "rumor", "sufre", "suicidio", "tristeza", "verguenza", "violencia",
+		"abuso", "cambios", "ciberacoso", "confidencial", "cyberbullying", "denigrante", "divulgar",
+		"emocion", "espiar", "falso", "humor", "intencional", "ira", "lastimar", "maltrato", "poder",
+		"reputacion", "sexual", "bullying", "venganza", "drogas", "sustancias", "resentimiento",
+	}
+	tics := []string{
+		"blog", "chat", "correo", "digital", "electronico", "facebook", "fotografia", "grabacion",
+		"internet", "mensaje", "movil", "pagina", "tecnologia", "telefono", "texto", "video", "web",
+		"youtube", "cibernetico", "foto", "imagen", "red", "twitter", "virtual", "linea", "whatsapp",
+		"instagram", "tiktok", "linkedin", "email", "snapchat", "foros", "mensajes",
+	}
+	partipantes := []string{
+		"acosador", "agresor", "testigos", "victima", "atormentador", "bully", "complice", "grupo",
+		"maton", "matoneo", "perpetrador", "persona", "padre", "universitario", "trabajador", "mujer",
+		"madre", "hombre", "companero", "companera", "adulto", "espia", "supervisor", "adolescente",
+		"joven", "niño", "chavo", "chico", "hijo", "infantil", "menor", "muchacho", "nina",
+	}
+	tiposCiberacoso := []string{
+		"ciberbulling", "sextorsion", "grooming", "ciberviolencia", "sexting", "invasivo", "racial",
+		"laboral", "pareja", "familiar", "colectivo", "exclusion", "suplantacion", "denigracion",
+		"sonsacamiento", "doxxing", "ciberstalking",
+	}
+	prevencion := []string{
+		"psicoterapia", "colaboracion", "conciencia", "educacion", "supervicion", "comunicacion",
+	}
+
+	return isCategoryPresent(wordTf, factoresRiesgo) ||
+		isCategoryPresent(wordTf, tics) ||
+		isCategoryPresent(wordTf, partipantes) ||
+		isCategoryPresent(wordTf, tiposCiberacoso) ||
+		isCategoryPresent(wordTf, prevencion)
 }
