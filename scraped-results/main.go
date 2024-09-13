@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strings"
 
@@ -23,6 +24,14 @@ import (
 
 	ScrapedResultsRepository "webscraper-go/scraped-results/infrastructure/persistence/mysql"
 )
+
+type RequestBody struct {
+	Content string `json:"content"`
+}
+
+type ResponseBody struct {
+	Corpus string `json:"corpus"`
+}
 
 func main() {
 	cfg := config.Configuration{
@@ -73,7 +82,10 @@ func main() {
 			log.Fatal(errGetCleanCorpus)
 		}
 
-		wordToCount := map[string]int{
+		//Split
+		corpus := strings.Fields(result)
+
+		wordTf := map[string]float64{
 			"mensajes":       0,
 			"redes sociales": 0,
 			"chat":           0,
@@ -125,8 +137,119 @@ func main() {
 			"periodico":      0,
 		}
 
-		for word, _ := range wordToCount {
-			wordToCount[word] = CountWord(result, word)
+		wordToTfIdf := map[string]float64{
+			"mensajes":       0,
+			"redes sociales": 0,
+			"chat":           0,
+			"video":          0,
+			"correo":         0,
+			"foros":          0,
+			"facebook":       0,
+			"instagram":      0,
+			"snapchat":       0,
+			"whatsapp":       0,
+			"twitter":        0,
+			"youtube":        0,
+			"tiktok":         0,
+			"linkedin":       0,
+			"blog":           0,
+			"email":          0,
+			"primaria":       0,
+			"secundaria":     0,
+			"facultad":       0,
+			"bachillerato":   0,
+			"universidad":    0,
+			"preparatoria":   0,
+			"colegio":        0,
+			"instituto":      0,
+			"media":          0,
+			"academia":       0,
+			"institucion":    0,
+			"acosador":       0,
+			"victima":        0,
+			"perpetrador":    0,
+			"companeros":     0,
+			"agresor":        0,
+			"testigos":       0,
+			"espia":          0,
+			"maton":          0,
+			"grupo":          0,
+			"bully":          0,
+			"supervisor":     0,
+			"adolescente":    0,
+			"joven":          0,
+			"niño":           0,
+			"infantil":       0,
+			"constante":      0,
+			"frecuente":      0,
+			"persistente":    0,
+			"reiterado":      0,
+			"ocasional":      0,
+			"repetitivo":     0,
+			"periodico":      0,
+		}
+
+		for word, _ := range wordTf {
+			wordTf[word] = CountWord(corpus, word)
+			wordToTfIdf[word] = calculateTfidfForWordInCorpus(word, corpus)
+		}
+
+		createNewSemanticOntologyTfIdfResult := domain.SemanticOntologyTfIdfResult{
+			ProjectID:     scrapedResult.ProjectId,
+			Title:         scrapedResult.Title,
+			URL:           scrapedResult.Url,
+			Content:       scrapedResult.Content,
+			Number:        scrapedResult.Number,
+			Mensajes:      wordToTfIdf["mensajes"],
+			RedesSociales: wordToTfIdf["redes sociales"],
+			Chat:          wordToTfIdf["chat"],
+			Video:         wordToTfIdf["video"],
+			Correo:        wordToTfIdf["correo"],
+			Foros:         wordToTfIdf["foros"],
+			Facebook:      wordToTfIdf["facebook"],
+			Instagram:     wordToTfIdf["instagram"],
+			SnapChat:      wordToTfIdf["snapchat"],
+			WhatsApp:      wordToTfIdf["whatsapp"],
+			Twitter:       wordToTfIdf["twitter"],
+			YouTube:       wordToTfIdf["youtube"],
+			TikTok:        wordToTfIdf["tiktok"],
+			LinkedIn:      wordToTfIdf["linkedin"],
+			Blog:          wordToTfIdf["blog"],
+			Email:         wordToTfIdf["email"],
+			Primaria:      wordToTfIdf["primaria"],
+			Secundaria:    wordToTfIdf["secundaria"],
+			Facultad:      wordToTfIdf["facultad"],
+			Bachillerato:  wordToTfIdf["bachillerato"],
+			Universidad:   wordToTfIdf["universidad"],
+			Preparatoria:  wordToTfIdf["preparatoria"],
+			Colegio:       wordToTfIdf["colegio"],
+			Instituto:     wordToTfIdf["instituto"],
+			Media:         wordToTfIdf["media"],
+			Academia:      wordToTfIdf["academia"],
+			Institucion:   wordToTfIdf["institucion"],
+			Acosador:      wordToTfIdf["acosador"],
+			Victima:       wordToTfIdf["victima"],
+			Perpetrador:   wordToTfIdf["perpetrador"],
+			Companeros:    wordToTfIdf["companeros"],
+			Agresor:       wordToTfIdf["agresor"],
+			Testigos:      wordToTfIdf["testigos"],
+			Espia:         wordToTfIdf["espia"],
+			Maton:         wordToTfIdf["maton"],
+			Grupo:         wordToTfIdf["grupo"],
+			Bully:         wordToTfIdf["bully"],
+			Supervisor:    wordToTfIdf["supervisor"],
+			Adolescente:   wordToTfIdf["adolescente"],
+			Joven:         wordToTfIdf["joven"],
+			Niño:          wordToTfIdf["niño"],
+			Infantil:      wordToTfIdf["infantil"],
+			Constante:     wordToTfIdf["constante"],
+			Frecuente:     wordToTfIdf["frecuente"],
+			Persistente:   wordToTfIdf["persistente"],
+			Reiterado:     wordToTfIdf["reiterado"],
+			Ocasional:     wordToTfIdf["ocasional"],
+			Repetitivo:    wordToTfIdf["repetitivo"],
+			Periodico:     wordToTfIdf["periodico"],
+			DeletedAt:     false,
 		}
 
 		createNewSemanticOntologyCountResult := domain.SemanticOntologyCountResult{
@@ -135,69 +258,84 @@ func main() {
 			URL:           scrapedResult.Url,
 			Content:       scrapedResult.Content,
 			Number:        scrapedResult.Number,
-			Mensajes:      float64(wordToCount["mensajes"]),
-			RedesSociales: float64(wordToCount["redes sociales"]),
-			Chat:          float64(wordToCount["chat"]),
-			Video:         float64(wordToCount["video"]),
-			Correo:        float64(wordToCount["correo"]),
-			Foros:         float64(wordToCount["foros"]),
-			Facebook:      float64(wordToCount["facebook"]),
-			Instagram:     float64(wordToCount["instagram"]),
-			SnapChat:      float64(wordToCount["snapchat"]),
-			WhatsApp:      float64(wordToCount["whatsapp"]),
-			Twitter:       float64(wordToCount["twitter"]),
-			YouTube:       float64(wordToCount["youtube"]),
-			TikTok:        float64(wordToCount["tiktok"]),
-			LinkedIn:      float64(wordToCount["linkedin"]),
-			Blog:          float64(wordToCount["blog"]),
-			Email:         float64(wordToCount["email"]),
-			Primaria:      float64(wordToCount["primaria"]),
-			Secundaria:    float64(wordToCount["secundaria"]),
-			Facultad:      float64(wordToCount["facultad"]),
-			Bachillerato:  float64(wordToCount["bachillerato"]),
-			Universidad:   float64(wordToCount["universidad"]),
-			Preparatoria:  float64(wordToCount["preparatoria"]),
-			Colegio:       float64(wordToCount["colegio"]),
-			Instituto:     float64(wordToCount["instituto"]),
-			Media:         float64(wordToCount["media"]),
-			Academia:      float64(wordToCount["academia"]),
-			Institucion:   float64(wordToCount["institucion"]),
-			Acosador:      float64(wordToCount["acosador"]),
-			Victima:       float64(wordToCount["victima"]),
-			Perpetrador:   float64(wordToCount["perpetrador"]),
-			Companeros:    float64(wordToCount["companeros"]),
-			Agresor:       float64(wordToCount["agresor"]),
-			Testigos:      float64(wordToCount["testigos"]),
-			Espia:         float64(wordToCount["espia"]),
-			Maton:         float64(wordToCount["maton"]),
-			Grupo:         float64(wordToCount["grupo"]),
-			Bully:         float64(wordToCount["bully"]),
-			Supervisor:    float64(wordToCount["supervisor"]),
-			Adolescente:   float64(wordToCount["adolescente"]),
-			Joven:         float64(wordToCount["joven"]),
-			Niño:          float64(wordToCount["niño"]),
-			Infantil:      float64(wordToCount["infantil"]),
-			Constante:     float64(wordToCount["constante"]),
-			Frecuente:     float64(wordToCount["frecuente"]),
-			Persistente:   float64(wordToCount["persistente"]),
-			Reiterado:     float64(wordToCount["reiterado"]),
-			Ocasional:     float64(wordToCount["ocasional"]),
-			Repetitivo:    float64(wordToCount["repetitivo"]),
-			Periodico:     float64(wordToCount["periodico"]),
+			Mensajes:      wordTf["mensajes"],
+			RedesSociales: wordTf["redes sociales"],
+			Chat:          wordTf["chat"],
+			Video:         wordTf["video"],
+			Correo:        wordTf["correo"],
+			Foros:         wordTf["foros"],
+			Facebook:      wordTf["facebook"],
+			Instagram:     wordTf["instagram"],
+			SnapChat:      wordTf["snapchat"],
+			WhatsApp:      wordTf["whatsapp"],
+			Twitter:       wordTf["twitter"],
+			YouTube:       wordTf["youtube"],
+			TikTok:        wordTf["tiktok"],
+			LinkedIn:      wordTf["linkedin"],
+			Blog:          wordTf["blog"],
+			Email:         wordTf["email"],
+			Primaria:      wordTf["primaria"],
+			Secundaria:    wordTf["secundaria"],
+			Facultad:      wordTf["facultad"],
+			Bachillerato:  wordTf["bachillerato"],
+			Universidad:   wordTf["universidad"],
+			Preparatoria:  wordTf["preparatoria"],
+			Colegio:       wordTf["colegio"],
+			Instituto:     wordTf["instituto"],
+			Media:         wordTf["media"],
+			Academia:      wordTf["academia"],
+			Institucion:   wordTf["institucion"],
+			Acosador:      wordTf["acosador"],
+			Victima:       wordTf["victima"],
+			Perpetrador:   wordTf["perpetrador"],
+			Companeros:    wordTf["companeros"],
+			Agresor:       wordTf["agresor"],
+			Testigos:      wordTf["testigos"],
+			Espia:         wordTf["espia"],
+			Maton:         wordTf["maton"],
+			Grupo:         wordTf["grupo"],
+			Bully:         wordTf["bully"],
+			Supervisor:    wordTf["supervisor"],
+			Adolescente:   wordTf["adolescente"],
+			Joven:         wordTf["joven"],
+			Niño:          wordTf["niño"],
+			Infantil:      wordTf["infantil"],
+			Constante:     wordTf["constante"],
+			Frecuente:     wordTf["frecuente"],
+			Persistente:   wordTf["persistente"],
+			Reiterado:     wordTf["reiterado"],
+			Ocasional:     wordTf["ocasional"],
+			Repetitivo:    wordTf["repetitivo"],
+			Periodico:     wordTf["periodico"],
 			DeletedAt:     false,
 		}
-		res, errInsert := insertDocument(client, createNewSemanticOntologyCountResult)
+		res1, errInsert := insertNewSemanticOntologyCount(client, createNewSemanticOntologyCountResult)
 		if errInsert != nil {
 			log.Fatal(errInsert)
 		}
-		fmt.Printf("Inserted document with ID %v\n", res.InsertedID)
+		fmt.Printf("Inserted document with ID %v\n", res1.InsertedID)
+
+		res2, errInsert := insertNewSemanticOntologyTfIdf(client, createNewSemanticOntologyTfIdfResult)
+		if errInsert != nil {
+			log.Fatal(errInsert)
+		}
+		fmt.Printf("Inserted document with ID %v\n", res2.InsertedID)
 	}
 
 }
 
-func insertDocument(client *mongo.Client, result domain.SemanticOntologyCountResult) (*mongo.InsertOneResult, error) {
+func insertNewSemanticOntologyCount(client *mongo.Client, result domain.SemanticOntologyCountResult) (*mongo.InsertOneResult, error) {
 	collection := client.Database("acosoDBMongo").Collection("semantic_ontology_count_result")
+	ctx := context.TODO()
+	res, err := collection.InsertOne(ctx, result)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
 
+func insertNewSemanticOntologyTfIdf(client *mongo.Client, result domain.SemanticOntologyTfIdfResult) (*mongo.InsertOneResult, error) {
+	collection := client.Database("acosoDBMongo").Collection("semantic_ontology_tfidf_result")
 	ctx := context.TODO()
 	res, err := collection.InsertOne(ctx, result)
 	if err != nil {
@@ -207,7 +345,6 @@ func insertDocument(client *mongo.Client, result domain.SemanticOntologyCountRes
 }
 
 func getCleanCorpus(htmlContent string) (string, error) {
-	// Crear el cuerpo de la solicitud
 	requestBody := RequestBody{
 		Content: htmlContent,
 	}
@@ -217,7 +354,7 @@ func getCleanCorpus(htmlContent string) (string, error) {
 		return "", fmt.Errorf("error al convertir el cuerpo a JSON: %v", err)
 	}
 
-	url := "http://localhost:5000/clean-corpus" // URL del endpoint de Flask
+	url := "http://localhost:5000/clean-corpus"
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return "", fmt.Errorf("error al hacer la solicitud POST: %v", err)
@@ -238,21 +375,49 @@ func getCleanCorpus(htmlContent string) (string, error) {
 	return responseBody.Corpus, nil
 }
 
-func CountWord(corpus string, word string) int {
+func CountWord(corpus []string, word string) float64 {
 	count := 0
-	words := strings.Fields(corpus)
-	for _, w := range words {
-		if w == word {
-			count++
+	for _, doc := range corpus {
+		count += strings.Count(strings.ToLower(doc), strings.ToLower(word))
+	}
+	return float64(count)
+}
+
+// Función para calcular el TF-IDF de una palabra en el corpus
+func calculateTfidfForWordInCorpus(word string, corpus []string) float64 {
+	tfIdf := 0.0
+	docCount := len(corpus)
+	wordDocCount := 0
+
+	// Calcular la frecuencia de documentos que contienen la palabra
+	for _, doc := range corpus {
+		if strings.Contains(strings.ToLower(doc), strings.ToLower(word)) {
+			wordDocCount++
 		}
 	}
-	return count
-}
 
-type RequestBody struct {
-	Content string `json:"content"`
-}
+	// Calcular IDF
+	idf := math.Log(float64(docCount) / float64(wordDocCount+1)) // +1 para evitar log(0)
 
-type ResponseBody struct {
-	Corpus string `json:"corpus"`
+	// Calcular TF y TF-IDF para cada documento y tomar el máximo
+	for _, doc := range corpus {
+		words := strings.Fields(doc)
+		totalWords := len(words)
+		wordCount := 0
+
+		for _, w := range words {
+			if strings.ToLower(w) == strings.ToLower(word) {
+				wordCount++
+			}
+		}
+
+		tf := float64(wordCount) / float64(totalWords)
+		tfIdfDoc := tf * idf
+
+		if tfIdfDoc > tfIdf {
+			tfIdf = tfIdfDoc
+		}
+	}
+
+	return tfIdf
 }
