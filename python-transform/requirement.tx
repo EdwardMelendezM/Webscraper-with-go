@@ -1,0 +1,4 @@
+Flask==2.3.2
+beautifulsoup4==4.12.2
+spacy==3.6.0
+es_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.6.0/es_core_news_sm-3.6.0.tar.gz

@@ -12,3 +12,8 @@ create-db-neo4j:
                  -v neo4j_data:/data \
                  -e NEO4J_AUTH=neo4j/testpassword \
                  -d neo4j
+
+create-db-mongo:
+	docker run --name mongo-db \
+		-p 27017:27017 \
+		-d mongo
