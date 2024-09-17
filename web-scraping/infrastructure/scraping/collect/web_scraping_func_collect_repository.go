@@ -18,7 +18,7 @@ func (r WebScrapingCollectRepository) CollectSearchResults(
 	results *[]domain.SearchResult,
 ) {
 	c := colly.NewCollector(
-		colly.AllowedDomains("www.google.com", "google.com"),
+		//colly.AllowedDomains("www.google.com", "google.com", "www.search.brave.com", "search.brave.com"),
 		colly.UserAgent("Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/116.0.0.0 Safari/537.36"),
 	)
 
@@ -34,6 +34,40 @@ func (r WebScrapingCollectRepository) CollectSearchResults(
 	// Handle errors during scraping
 	c.OnError(func(r *colly.Response, e error) {
 		fmt.Printf("Error: %v\n", e)
+	})
+
+	// Manejo para Brave
+	c.OnHTML("div.snippet", func(e *colly.HTMLElement) {
+		title := e.ChildText(".title")
+		url := e.ChildAttr("a", "href")
+
+		if title != "" && url != "" {
+			cleanedURL := cleanURL(url)
+			client := &http.Client{
+				Timeout: 8 * time.Second,
+			}
+			resp, err := client.Get(cleanedURL)
+			if err != nil {
+				fmt.Printf("Error descargando contenido de %s: %v\n", cleanedURL, err)
+				return
+			}
+			defer resp.Body.Close()
+
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				fmt.Printf("Error leyendo contenido de %s: %v\n", cleanedURL, err)
+				return
+			}
+
+			newResult := domain.SearchResult{
+				Title:   cleanText(title),
+				Url:     cleanedURL,
+				Content: cleanText(string(body)),
+				Path:    "", // Puedes modificar este valor si lo necesitas
+			}
+
+			*results = append(*results, newResult)
+		}
 	})
 
 	// Extract search results
@@ -73,7 +107,8 @@ func (r WebScrapingCollectRepository) CollectSearchResults(
 	})
 
 	joinedTopic := strings.Join(strings.Fields(topic), "+")
-	searchURL := "https://www.google.com/search?q=" + joinedTopic
+	//searchURL := "https://www.google.com/search?q=" + joinedTopic
+	searchURL := "https://search.brave.com/search?q=" + joinedTopic
 	err := c.Visit(searchURL)
 	if err != nil {
 		fmt.Println("Error visiting URL: ", searchURL)
