@@ -10,4 +10,5 @@ type WebScrapingRepository interface {
 
 type WebScrapingCollectRepository interface {
 	CollectSearchResults(topic string, resultsChan *[]SearchResult)
+	CollectSearchResultsAndReturn(topic string) (resultsChan []SearchResult, err error)
 }

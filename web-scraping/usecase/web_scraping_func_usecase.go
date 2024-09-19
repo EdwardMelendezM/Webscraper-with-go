@@ -16,143 +16,278 @@ func (u *WebScrapingFuncUseCase) ExtractSearchResults() (bool, error) {
 		return false, err
 	}
 
-	results := make([]domain.SearchResult, 0)
+	//results := make([]domain.SearchResult, 0)
 
 	for index, topic := range topics {
 		fmt.Printf(":=> Number: %d\n", index+1)
-		u.WebScrapingCollectRepository.CollectSearchResults(topic.Title, &results)
-	}
-
-	if len(results) == 0 {
-		return false, nil
-	}
-
-	existingResults, errResult := u.WebScrapingRepository.GetRecordResult(projectId, 1000)
-	if errResult != nil {
-		return false, errResult
-	}
-
-	existingMap := make(map[string]domain.NewRecordWebScraping)
-	notExistingResults := make(map[string]domain.NewRecordWebScraping)
-	seenMap := make(map[string]domain.NewRecordWebScraping)
-
-	// 1. Map existing results
-	for _, existingResult := range existingResults {
-		existingMap[existingResult.Url] = domain.NewRecordWebScraping{
-			Title: existingResult.Title,
-			Url:   existingResult.Url,
+		//u.WebScrapingCollectRepository.CollectSearchResults(topic.Title, &results)
+		results, errReturn := u.WebScrapingCollectRepository.CollectSearchResultsAndReturn(topic.Title)
+		if errReturn != nil {
+			return false, errReturn
 		}
-	}
-
-	// 2. Verify repeated results
-	for _, result := range results {
-		if _, ok := seenMap[result.Url]; ok {
-			continue
+		if len(results) == 0 {
+			return false, nil
 		}
 
-		if strings.Contains(result.Url, "pdf") {
-			continue
+		existingResults, errResult := u.WebScrapingRepository.GetRecordResult(projectId, 1000)
+		if errResult != nil {
+			return false, errResult
 		}
 
-		if strings.Contains(result.Content, "PDF") {
-			continue
+		existingMap := make(map[string]domain.NewRecordWebScraping)
+		notExistingResults := make(map[string]domain.NewRecordWebScraping)
+		seenMap := make(map[string]domain.NewRecordWebScraping)
+
+		// 1. Map existing results
+		for _, existingResult := range existingResults {
+			existingMap[existingResult.Url] = domain.NewRecordWebScraping{
+				Title: existingResult.Title,
+				Url:   existingResult.Url,
+			}
 		}
 
-		if strings.Contains(result.Url, "youtube") {
-			continue
-		}
+		// 2. Verify repeated results
+		for _, result := range results {
+			if _, ok := seenMap[result.Url]; ok {
+				continue
+			}
 
-		if strings.Contains(result.Content, "404") {
-			continue
-		}
+			if strings.Contains(result.Url, "pdf") {
+				continue
+			}
 
-		if strings.Contains(result.Content, "403") {
-			continue
-		}
+			if strings.Contains(result.Content, "PDF") {
+				continue
+			}
 
-		if strings.Contains(result.Content, "Just a moment...") {
-			continue
-		}
+			if strings.Contains(result.Url, "youtube") {
+				continue
+			}
 
-		if strings.Contains(result.Content, "Oops, something went wrong") {
-			continue
-		}
+			if strings.Contains(result.Content, "404") {
+				continue
+			}
 
-		if strings.Contains(result.Content, "Sorry, you have been blocked") {
-			continue
-		}
+			if strings.Contains(result.Content, "403") {
+				continue
+			}
 
-		seenMap[result.Url] = domain.NewRecordWebScraping{
-			Title:   result.Title,
-			Url:     result.Url,
-			Content: result.Content,
-		}
-	}
+			if strings.Contains(result.Content, "Just a moment...") {
+				continue
+			}
 
-	// 3. Verify if existing results are in the new results
-	for _, result := range seenMap {
-		if _, ok := existingMap[result.Url]; !ok {
-			notExistingResults[result.Url] = domain.NewRecordWebScraping{
+			if strings.Contains(result.Content, "Oops, something went wrong") {
+				continue
+			}
+
+			if strings.Contains(result.Content, "Sorry, you have been blocked") {
+				continue
+			}
+
+			seenMap[result.Url] = domain.NewRecordWebScraping{
 				Title:   result.Title,
 				Url:     result.Url,
 				Content: result.Content,
 			}
-			delete(existingMap, result.Url)
 		}
+
+		// 3. Verify if existing results are in the new results
+		for _, result := range seenMap {
+			if _, ok := existingMap[result.Url]; !ok {
+				notExistingResults[result.Url] = domain.NewRecordWebScraping{
+					Title:   result.Title,
+					Url:     result.Url,
+					Content: result.Content,
+				}
+				delete(existingMap, result.Url)
+			}
+		}
+
+		// 4: Get last number
+		lastNumber, errLastNumber := u.WebScrapingRepository.GetLastNumber(projectId)
+		if errLastNumber != nil {
+			return false, errLastNumber
+		}
+
+		if lastNumber == nil {
+			lastNumber = new(int)
+			*lastNumber = 0
+		}
+
+		fmt.Printf("=== Start inserting new records ===\n")
+		// 5: Add new record notExistingResults
+		for _, notExistingResult := range notExistingResults {
+			if strings.TrimSpace(notExistingResult.Content) == "" || notExistingResult.Title == "" {
+				continue
+			}
+			id := uuid.New().String()
+			*lastNumber = *lastNumber + 1
+
+			// Limpiar y procesar contenido
+			contentCleaned, errClean := extractText(notExistingResult.Content)
+			if errClean != nil {
+				break
+			}
+
+			// Procesar título y contenido con PLN
+			titleTokens := tokenize(notExistingResult.Title)
+			contentTokens := tokenize(contentCleaned)
+
+			// Obtener la palabra clave más relevante
+			documents := [][]string{titleTokens, contentTokens}
+			wordKey, errGetKeyWord := getKeyword(contentCleaned, documents)
+			if errGetKeyWord != nil {
+				break
+			}
+
+			body := domain.CreateRecordWebScraping{
+				Title:         notExistingResult.Title,
+				Url:           notExistingResult.Url,
+				Content:       contentCleaned,
+				Number:        *lastNumber,
+				TitleCorpus:   strings.Join(titleTokens, ","),
+				ContentCorpus: strings.Join(contentTokens, ","),
+				WordKey:       wordKey,
+			}
+			_, errCreateNewRecord := u.WebScrapingRepository.CreateRecord(id, projectId, body)
+			if errCreateNewRecord != nil {
+				break
+			}
+			fmt.Printf("Number inserted: %d\n", *lastNumber)
+		}
+
 	}
 
-	// 4: Get last number
-	lastNumber, errLastNumber := u.WebScrapingRepository.GetLastNumber(projectId)
-	if errLastNumber != nil {
-		return false, errLastNumber
-	}
-
-	if lastNumber == nil {
-		lastNumber = new(int)
-		*lastNumber = 0
-	}
-
-	fmt.Printf("=== Start inserting new records ===\n")
-	// 5: Add new record notExistingResults
-	for _, notExistingResult := range notExistingResults {
-		if notExistingResult.Content == "" || notExistingResult.Title == "" {
-			continue
-		}
-		id := uuid.New().String()
-		*lastNumber = *lastNumber + 1
-
-		// Limpiar y procesar contenido
-		contentCleaned, errClean := extractText(notExistingResult.Content)
-		if errClean != nil {
-			break
-		}
-
-		// Procesar título y contenido con PLN
-		titleTokens := tokenize(notExistingResult.Title)
-		contentTokens := tokenize(contentCleaned)
-
-		// Obtener la palabra clave más relevante
-		documents := [][]string{titleTokens, contentTokens}
-		wordKey, errGetKeyWord := getKeyword(contentCleaned, documents)
-		if errGetKeyWord != nil {
-			break
-		}
-
-		body := domain.CreateRecordWebScraping{
-			Title:         notExistingResult.Title,
-			Url:           notExistingResult.Url,
-			Content:       contentCleaned,
-			Number:        *lastNumber,
-			TitleCorpus:   strings.Join(titleTokens, ","),
-			ContentCorpus: strings.Join(contentTokens, ","),
-			WordKey:       wordKey,
-		}
-		_, errCreateNewRecord := u.WebScrapingRepository.CreateRecord(id, projectId, body)
-		if errCreateNewRecord != nil {
-			break
-		}
-		fmt.Printf("Number inserted: %d\n", *lastNumber)
-	}
+	//if len(results) == 0 {
+	//	return false, nil
+	//}
+	//
+	//existingResults, errResult := u.WebScrapingRepository.GetRecordResult(projectId, 1000)
+	//if errResult != nil {
+	//	return false, errResult
+	//}
+	//
+	//existingMap := make(map[string]domain.NewRecordWebScraping)
+	//notExistingResults := make(map[string]domain.NewRecordWebScraping)
+	//seenMap := make(map[string]domain.NewRecordWebScraping)
+	//
+	//// 1. Map existing results
+	//for _, existingResult := range existingResults {
+	//	existingMap[existingResult.Url] = domain.NewRecordWebScraping{
+	//		Title: existingResult.Title,
+	//		Url:   existingResult.Url,
+	//	}
+	//}
+	//
+	//// 2. Verify repeated results
+	//for _, result := range results {
+	//	if _, ok := seenMap[result.Url]; ok {
+	//		continue
+	//	}
+	//
+	//	if strings.Contains(result.Url, "pdf") {
+	//		continue
+	//	}
+	//
+	//	if strings.Contains(result.Content, "PDF") {
+	//		continue
+	//	}
+	//
+	//	if strings.Contains(result.Url, "youtube") {
+	//		continue
+	//	}
+	//
+	//	if strings.Contains(result.Content, "404") {
+	//		continue
+	//	}
+	//
+	//	if strings.Contains(result.Content, "403") {
+	//		continue
+	//	}
+	//
+	//	if strings.Contains(result.Content, "Just a moment...") {
+	//		continue
+	//	}
+	//
+	//	if strings.Contains(result.Content, "Oops, something went wrong") {
+	//		continue
+	//	}
+	//
+	//	if strings.Contains(result.Content, "Sorry, you have been blocked") {
+	//		continue
+	//	}
+	//
+	//	seenMap[result.Url] = domain.NewRecordWebScraping{
+	//		Title:   result.Title,
+	//		Url:     result.Url,
+	//		Content: result.Content,
+	//	}
+	//}
+	//
+	//// 3. Verify if existing results are in the new results
+	//for _, result := range seenMap {
+	//	if _, ok := existingMap[result.Url]; !ok {
+	//		notExistingResults[result.Url] = domain.NewRecordWebScraping{
+	//			Title:   result.Title,
+	//			Url:     result.Url,
+	//			Content: result.Content,
+	//		}
+	//		delete(existingMap, result.Url)
+	//	}
+	//}
+	//
+	//// 4: Get last number
+	//lastNumber, errLastNumber := u.WebScrapingRepository.GetLastNumber(projectId)
+	//if errLastNumber != nil {
+	//	return false, errLastNumber
+	//}
+	//
+	//if lastNumber == nil {
+	//	lastNumber = new(int)
+	//	*lastNumber = 0
+	//}
+	//
+	//fmt.Printf("=== Start inserting new records ===\n")
+	//// 5: Add new record notExistingResults
+	//for _, notExistingResult := range notExistingResults {
+	//	if notExistingResult.Content == "" || notExistingResult.Title == "" {
+	//		continue
+	//	}
+	//	id := uuid.New().String()
+	//	*lastNumber = *lastNumber + 1
+	//
+	//	// Limpiar y procesar contenido
+	//	contentCleaned, errClean := extractText(notExistingResult.Content)
+	//	if errClean != nil {
+	//		break
+	//	}
+	//
+	//	// Procesar título y contenido con PLN
+	//	titleTokens := tokenize(notExistingResult.Title)
+	//	contentTokens := tokenize(contentCleaned)
+	//
+	//	// Obtener la palabra clave más relevante
+	//	documents := [][]string{titleTokens, contentTokens}
+	//	wordKey, errGetKeyWord := getKeyword(contentCleaned, documents)
+	//	if errGetKeyWord != nil {
+	//		break
+	//	}
+	//
+	//	body := domain.CreateRecordWebScraping{
+	//		Title:         notExistingResult.Title,
+	//		Url:           notExistingResult.Url,
+	//		Content:       contentCleaned,
+	//		Number:        *lastNumber,
+	//		TitleCorpus:   strings.Join(titleTokens, ","),
+	//		ContentCorpus: strings.Join(contentTokens, ","),
+	//		WordKey:       wordKey,
+	//	}
+	//	_, errCreateNewRecord := u.WebScrapingRepository.CreateRecord(id, projectId, body)
+	//	if errCreateNewRecord != nil {
+	//		break
+	//	}
+	//	fmt.Printf("Number inserted: %d\n", *lastNumber)
+	//}
 	return true, nil
 }
 
