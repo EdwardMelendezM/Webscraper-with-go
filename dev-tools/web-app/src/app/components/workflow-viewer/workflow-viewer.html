@@ -1,0 +1,29 @@
+@if (apiService.isLoading()) {
+  <div class="spinner-container">
+    <mat-spinner></mat-spinner>
+    <p>Loading Job Data...</p>
+  </div>
+} @else {
+  @if (apiService.job(); as job) {
+    <mat-card class="job-summary-card">
+      <mat-card-header>
+        <mat-card-title>Job Details</mat-card-title>
+        <mat-card-subtitle>Track the progress of a scraping job from start to finish.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p><strong>Job ID:</strong> {{ job.id }}</p>
+        <p><strong>Source URL:</strong> <a [href]="job.sourceUrl" target="_blank">{{ job.sourceUrl }}</a></p>
+        <p><strong>Created At:</strong> {{ job.createdAt | date:'full' }}</p>
+        <p><strong>Overall Status:</strong> {{ job.overallStatus }}</p>
+      </mat-card-content>
+    </mat-card>
+
+    <div class="workflow-container">
+      @for (step of job.workflowSteps; track step.stepName) {
+        <app-step-card [step]="step"></app-step-card>
+      }
+    </div>
+  } @else {
+    <p class="no-data">No job data found. Please select a job to view its workflow.</p>
+  }
+}

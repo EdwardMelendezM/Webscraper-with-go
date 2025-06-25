@@ -1,0 +1,23 @@
+<mat-card [ngClass]="'status-' + step.status.toLowerCase()">
+  <mat-card-header>
+    <mat-icon mat-card-avatar [ngClass]="'icon-' + step.status.toLowerCase()">
+      {{ step.status === 'Completed' ? 'check_circle' : (step.status === 'In Progress' ? 'sync' : 'error') }}
+    </mat-icon>
+    <mat-card-title>{{ step.stepName }}</mat-card-title>
+    <mat-card-subtitle>Status: {{ step.status }} | {{ step.timestamp | date:'medium' }}</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <h4>Output Data</h4>
+    <mat-divider></mat-divider>
+    <pre class="data-container"><code>{{ formattedData }}</code></pre>
+
+    @if (step.history) {
+      <h4>Transformation History</h4>
+      <mat-divider></mat-divider>
+      <div class="history">
+        <p><strong>Input:</strong> {{ step.history.input | slice:0:100 }}...</p>
+        <p><strong>Output:</strong> {{ step.history.output | slice:0:100 }}...</p>
+      </div>
+    }
+  </mat-card-content>
+</mat-card>

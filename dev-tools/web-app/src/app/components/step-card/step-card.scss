@@ -1,0 +1,25 @@
+.data-container {
+  background-color: #f4f4f4;
+  border-radius: 4px;
+  padding: 1rem;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: monospace;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.history {
+  font-size: 0.9em;
+  opacity: 0.8;
+  margin-top: 1rem;
+}
+.mat-card {
+  border-left: 5px solid;
+}
+.status-completed { border-left-color: #4caf50; }
+.status-in { border-left-color: #2196f3; }
+.status-failed { border-left-color: #f44336; }
+
+.icon-completed { color: #4caf50; }
+.icon-in { color: #2196f3; }
+.icon-failed { color: #f44336; }
