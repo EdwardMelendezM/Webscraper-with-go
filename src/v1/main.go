@@ -4,13 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	TopicsRepository "webscraper-go/topics/infrastructure/persistence/mysql"
 
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/EdwardMelendezM/api-info-shared/config"
 	"github.com/EdwardMelendezM/api-info-shared/db"
 
-	TopicsRepository "webscraper-go/topics/infrastructure/persistence/mysql"
 	WebScrapingRepository "webscraper-go/web-scraping/infrastructure/persistence/mysql"
 	WebScrapingCollectRepository "webscraper-go/web-scraping/infrastructure/scraping/collect"
 	webScraperUseCase "webscraper-go/web-scraping/usecase"

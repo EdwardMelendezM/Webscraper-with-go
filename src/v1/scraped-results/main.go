@@ -9,21 +9,19 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"webscraper-go/v1/scraped-results/domain"
+	ScrapedResultsRepository "webscraper-go/v1/scraped-results/infrastructure/persistence/mysql"
 
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 
 	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"webscraper-go/scraped-results/domain"
-
 	"github.com/EdwardMelendezM/api-info-shared/config"
 	"github.com/EdwardMelendezM/api-info-shared/db"
+	_ "github.com/go-sql-driver/mysql"
 	"go.mongodb.org/mongo-driver/mongo"
-
-	ScrapedResultsRepository "webscraper-go/scraped-results/infrastructure/persistence/mysql"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type RequestBody struct {

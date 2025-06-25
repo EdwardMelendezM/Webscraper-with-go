@@ -4,13 +4,12 @@ import (
 	"database/sql"
 	_ "database/sql"
 	_ "embed"
+	"webscraper-go/v1/scraped-results/domain"
 
 	"github.com/jackskj/carta"
 	"github.com/stroiman/go-automapper"
 
 	"github.com/EdwardMelendezM/api-info-shared/db"
-
-	"webscraper-go/scraped-results/domain"
 )
 
 //go:embed sql/get_scraped_results.sql

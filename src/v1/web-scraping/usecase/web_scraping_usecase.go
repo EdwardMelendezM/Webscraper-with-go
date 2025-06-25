@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	domainTopics "webscraper-go/topics/domain"
+	domainTopics "webscraper-go/v1/topics/domain"
 
 	"webscraper-go/web-scraping/domain"
 )
