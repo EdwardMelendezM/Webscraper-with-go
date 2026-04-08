@@ -3,22 +3,25 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/google/uuid"
+	"log"
+	"os"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func main() {
 	topics := []string{
-		//"Efectos Psicológicos del Acoso Escolar: Caminos hacia la Depresión",
-		//"Impacto del Acoso Cibernético en la Salud Mental: Casos de Depresión",
-		//"Depresión y Acoso en el Entorno Laboral: Testimonios Reales",
-		//"Historias de Depresión por Acoso en Redes Sociales: Un Análisis Personal",
-		//"Experiencias de Depresión en Víctimas de Acoso en Espacios Públicos",
-		//"Relatos de Depresión y Acoso en Instituciones Educativas",
-		//"El Ciclo de Acoso y Depresión: Cómo la Violencia Psicológica Afecta la Salud Mental",
-		//"Testimonios de Depresión en Mujeres Adultas Tras Experiencias de Acoso",
+		"Efectos Psicológicos del Acoso Escolar: Caminos hacia la Depresión",
+		"Impacto del Acoso Cibernético en la Salud Mental: Casos de Depresión",
+		"Depresión y Acoso en el Entorno Laboral: Testimonios Reales",
+		"Historias de Depresión por Acoso en Redes Sociales: Un Análisis Personal",
+		"Experiencias de Depresión en Víctimas de Acoso en Espacios Públicos",
+		"Relatos de Depresión y Acoso en Instituciones Educativas",
+		"El Ciclo de Acoso y Depresión: Cómo la Violencia Psicológica Afecta la Salud Mental",
+		"Testimonios de Depresión en Mujeres Adultas Tras Experiencias de Acoso",
 		//"Acoso y Depresión en Jóvenes: Historias de Superación y Resiliencia",
 		//"Cómo el Acoso Emocional Conduce a la Depresión: Experiencias en el Ámbito Familiar",
 		//"Crónicas de Depresión en Víctimas de Acoso en el Trabajo: Un Enfoque Integral",
@@ -1150,37 +1153,39 @@ func main() {
 		//"Cómo el Ciberacoso Afecta las Relaciones Familiares y Desencadena Violencia (2024)",
 		//"El bullying y el ciberbullying están en aumento, alertan los pediatras: cómo abordar esta problemática",
 	}
-	dsn := "root:secret@tcp(127.0.0.1:3309)/acosoDB"
-	db, err := sql.Open("mysql", dsn)
+	dsn := os.Getenv("POSTGRES_DSN")
+	if dsn == "" {
+		// Asegúrate de que el puerto coincida con ${POSTGRES_PORT} de tu .env
+		dsn = "postgres://postgres:secret@127.0.0.1:5111/acoso-db?sslmode=disable"
+	}
+
+	db, err := sql.Open("pgx", dsn)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error abriendo base de datos: %v", err)
 	}
 	defer db.Close()
 
-	// Verificar la conexión
-	err = db.Ping()
-	if err != nil {
-		panic(err)
+	if err = db.Ping(); err != nil {
+		log.Fatalf("No se pudo conectar a la DB: %v", err)
 	}
-	fmt.Println("Conexión exitosa a la base de datos.")
+
+	fmt.Println("Conexión exitosa.")
+
 	now := time.Now()
+	projectId := "91da2ca7-6244-11ef-9d2f-0242ac110002"
+
 	for _, topic := range topics {
-		//Insert into database
 		id := uuid.New().String()
-		projectId := "91da2ca7-6244-11ef-9d2f-0242ac110002"
+
 		_, errEx := db.Exec(
-			"INSERT INTO scraped_topics (id, project_id,title,created_at) VALUES (?,?,?,?)",
-			id,
-			projectId,
-			topic,
-			now,
+			"INSERT INTO scraped_topics (id, project_id, title, created_at) VALUES ($1, $2, $3, $4)",
+			id, projectId, topic, now,
 		)
 
 		if errEx != nil {
-			fmt.Println("Error: ", errEx)
-			panic(err)
+			log.Printf("Error al insertar el tema '%s': %v", topic, errEx)
+			continue // O panic(errEx) si quieres detener todo
 		}
-
 	}
-	fmt.Println("Se han migrado los temas correctamente.")
+	fmt.Println("Proceso finalizado.")
 }

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	_ "database/sql"
 	_ "embed"
-	"webscraper-go/v1/topics/domain"
+	"webscraper-go/topics/domain"
 
 	"github.com/jackskj/carta"
 	"github.com/stroiman/go-automapper"
@@ -19,7 +19,7 @@ func (r TopicsMysqlRepo) GetTopics(projectId string) (
 	topics []domain.Topic,
 	err error,
 ) {
-	results, err := db.Client.Query(
+	results, err := db.ClientV2.Query(
 		QueryGetTopics,
 		projectId,
 	)

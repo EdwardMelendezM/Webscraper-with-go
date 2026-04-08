@@ -1,7 +1,7 @@
 package mysql
 
 import (
-	"webscraper-go/v1/topics/domain"
+	"webscraper-go/topics/domain"
 )
 
 type TopicsMysqlRepo struct {

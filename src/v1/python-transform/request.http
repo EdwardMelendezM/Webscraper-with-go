@@ -1,0 +1,25 @@
+### Configuración de Variables
+@host = http://localhost:5000
+
+### Prueba de limpieza de Corpus (Caso Base)
+POST {{host}}/clean-corpus
+Content-Type: application/json
+
+{
+  "content": "<html><body><h1>Scraper de Edward</h1><p>Estamos procesando datos en Cusco.</p></body></html>"
+}
+
+### Prueba con HTML sucio (Scripts y Estilos)
+POST {{host}}/clean-corpus
+Content-Type: application/json
+
+{
+  "content": "<html><head><style>.bad { color: red; }</style></head><body><script>console.log('test')</script><header>Menu</header><article>El procesamiento de lenguaje natural es increíble.</article><footer>Pie de página</footer></body></html>"
+}
+
+### Prueba de Error (Cuerpo vacío)
+POST {{host}}/clean-corpus
+Content-Type: application/json
+
+{
+}

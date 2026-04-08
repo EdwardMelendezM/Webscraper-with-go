@@ -6,9 +6,10 @@ import (
 
 	"database/sql"
 	_ "database/sql"
+	"webscraper-go/web-scraping/domain"
+
 	"github.com/jackskj/carta"
 	"github.com/stroiman/go-automapper"
-	"webscraper-go/web-scraping/domain"
 
 	"github.com/EdwardMelendezM/api-info-shared/db"
 )
@@ -32,7 +33,7 @@ func (r WebScrapingMysqlRepo) VerifyExistsUrl(
 	projectId string,
 	url string,
 ) (exists bool, err error) {
-	err = db.Client.QueryRow(
+	err = db.ClientV2.QueryRow(
 		QueryVerifyExistsUrl,
 		projectId,
 		url,
@@ -45,7 +46,7 @@ func (r WebScrapingMysqlRepo) VerifyExistsUrl(
 }
 
 func (r WebScrapingMysqlRepo) GetLastNumber(projectId string) (lastNumber *int, err error) {
-	err = db.Client.QueryRow(
+	err = db.ClientV2.QueryRow(
 		QueryGetLastNumber,
 		projectId,
 	).Scan(&lastNumber)
@@ -63,7 +64,7 @@ func (r WebScrapingMysqlRepo) CreateRecord(
 	body domain.CreateRecordWebScraping,
 ) (lastId *string, err error) {
 	now := time.Now()
-	_, err = db.Client.Exec(
+	_, err = db.ClientV2.Exec(
 		QueryCreateNewRecord,
 		id,
 		projectId,
@@ -88,7 +89,7 @@ func (r WebScrapingMysqlRepo) UpdateRecordResult(
 	projectId string,
 	body domain.UpdateRecordWebScraping,
 ) (err error) {
-	_, err = db.Client.Exec(
+	_, err = db.ClientV2.Exec(
 		QueryUpdateRecordResult,
 		body.Content,
 		id,
@@ -104,7 +105,7 @@ func (r WebScrapingMysqlRepo) GetRecordResult(
 	projectId string,
 	sizeRecord int,
 ) (webScrapingResults []domain.WebScrapingResult, err error) {
-	results, err := db.Client.Query(
+	results, err := db.ClientV2.Query(
 		QueryGetRecordResult,
 		projectId,
 		sizeRecord,

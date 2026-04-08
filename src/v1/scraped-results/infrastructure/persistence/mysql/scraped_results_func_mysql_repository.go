@@ -19,7 +19,7 @@ func (r ScrapedResultsMysqlRepo) GetScrapedResults(projectId string) (
 	topics []domain.ScrapedResult,
 	err error,
 ) {
-	results, err := db.Client.Query(
+	results, err := db.ClientV2.Query(
 		QueryGetScrapedResults,
 		projectId,
 	)

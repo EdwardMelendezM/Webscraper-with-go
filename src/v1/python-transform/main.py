@@ -3,51 +3,63 @@ from bs4 import BeautifulSoup
 import spacy
 import string
 
-# Cargar el modelo en español
-nlp = spacy.load('es_core_news_sm')
+# Optimización: Cargamos solo lo necesario (tokenizer y lemmatizer)
+# Excluimos el parser y ner para ahorrar memoria y CPU
+nlp = spacy.load('es_core_news_sm', exclude=['parser', 'ner'])
 
 app = Flask(__name__)
 
-# Función para limpiar el HTML y extraer solo el texto
 def clean_html(html_content):
+    if not html_content:
+        return ""
+
     soup = BeautifulSoup(html_content, 'html.parser')
 
-    # Eliminar scripts y estilos
-    for script_or_style in soup(['script', 'style']):
-        script_or_style.extract()
+    for script_or_style in soup(['script', 'style', 'header', 'footer', 'nav']):
+        script_or_style.decompose() # decompose es ligeramente más eficiente que extract
 
-    # Obtener el texto limpio
-    text = soup.get_text()
+    # Usamos separator para evitar que palabras queden pegadas
+    text = soup.get_text(separator=' ')
 
-    # Dividir en líneas y unir
-    lines = (line.strip() for line in text.splitlines())
-    chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-    text = '\n'.join(chunk for chunk in chunks if chunk)
+    # Limpieza de espacios en blanco usando join/split (más pythonic)
+    return " ".join(text.split())
 
-    return text
-
-# Función para procesar el texto: tokenización, eliminación de stopwords y lematización
 def process_text(text):
+    # nlp.pipe es más rápido para textos grandes, pero para strings cortos
+    # nlp(text) está bien. Aquí usamos disable para estar seguros.
     doc = nlp(text)
 
-    # Tokenización, eliminación de stopwords, puntuación y lematización
-    tokens = [token.lemma_.lower() for token in doc if not token.is_stop and token.lemma_ not in string.punctuation]
+    # Lematización y filtrado en una sola pasada
+    # Añadimos limpieza de saltos de línea y espacios extras
+    tokens = [
+        token.lemma_.lower()
+        for token in doc
+        if not token.is_stop
+           and not token.is_punct
+           and not token.is_space
+           and token.lemma_.strip() not in string.punctuation
+    ]
 
-    # Devolver el corpus como texto limpio
     return ' '.join(tokens)
 
 @app.route('/clean-corpus', methods=['POST'])
 def clean_corpus():
-    data = request.json
+    data = request.get_json(silent=True)
+    if not data or 'content' not in data:
+        return jsonify({'error': 'Falta el campo content'}), 400
+
     html_content = data.get('content', '')
 
-    # Limpiar el contenido HTML
+    # Pipeline de procesamiento
     clean_text = clean_html(html_content)
-
-    # Procesar el texto: tokenización, eliminación de stopwords y lematización
     corpus = process_text(clean_text)
 
-    return jsonify({'corpus': corpus})
+    return jsonify({
+        'corpus': corpus,
+        'length_original': len(html_content),
+        'length_clean': len(corpus)
+    })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    # host='0.0.0.0' está perfecto para Docker
+    app.run(host='0.0.0.0', port=5000, debug=False)

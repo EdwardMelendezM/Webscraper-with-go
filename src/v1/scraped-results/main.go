@@ -9,17 +9,18 @@ import (
 	"os"
 	"sort"
 	"strings"
-	"webscraper-go/v1/scraped-results/domain"
-	ScrapedResultsRepository "webscraper-go/v1/scraped-results/infrastructure/persistence/mysql"
+	"webscraper-go/scraped-results/domain"
+	ScrapedResultsRepository "webscraper-go/scraped-results/infrastructure/persistence/mysql"
 
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
 
 	"database/sql"
+
 	"github.com/EdwardMelendezM/api-info-shared/config"
 	"github.com/EdwardMelendezM/api-info-shared/db"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -32,16 +33,24 @@ type ResponseBody struct {
 	Corpus string `json:"corpus"`
 }
 
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
+}
+
 func main() {
 	cfg := config.Configuration{
-		ServerPort:  os.Getenv("SERVER_PORT"),
-		StoragePath: os.Getenv("STORAGE_PATH"),
+		ServerPort:  getEnv("SERVER_PORT", "8080"),
+		StoragePath: getEnv("STORAGE_PATH", "./storage"),
 		DB: config.DB{
-			DbDatabase: os.Getenv("DB_DATABASE"),
-			DbHost:     os.Getenv("DB_HOST"),
-			DbPort:     os.Getenv("DB_PORT"),
-			DbUsername: os.Getenv("DB_USERNAME"),
-			DbPassword: os.Getenv("DB_PASSWORD"),
+			// Usamos los nombres exactos de tu archivo .env
+			DbDatabase: getEnv("POSTGRES_DB", "acoso-db"),
+			DbHost:     getEnv("POSTGRES_HOST", "127.0.0.1"),
+			DbPort:     getEnv("POSTGRES_PORT", "5111"),
+			DbUsername: getEnv("POSTGRES_USER", "postgres"),
+			DbPassword: getEnv("POSTGRES_PASSWORD", "secret"),
 		},
 	}
 
