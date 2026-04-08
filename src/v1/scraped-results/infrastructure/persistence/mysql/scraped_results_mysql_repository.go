@@ -1,7 +1,7 @@
 package mysql
 
 import (
-	"webscraper-go/v1/scraped-results/domain"
+	"webscraper-go/scraped-results/domain"
 )
 
 type ScrapedResultsMysqlRepo struct {

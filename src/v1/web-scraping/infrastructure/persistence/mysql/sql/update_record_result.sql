@@ -1,4 +1,4 @@
 UPDATE scraped_results
-SET content = ?
-WHERE id = ?
-  AND project_id = ?;
+SET content = $1
+WHERE id = $2
+  AND project_id = $3;

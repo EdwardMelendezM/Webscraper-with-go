@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	_ "database/sql"
 	_ "embed"
-	"webscraper-go/v1/scraped-results/domain"
+	"webscraper-go/scraped-results/domain"
 
 	"github.com/jackskj/carta"
 	"github.com/stroiman/go-automapper"

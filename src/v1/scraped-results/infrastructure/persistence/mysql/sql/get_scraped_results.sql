@@ -9,6 +9,6 @@ SELECT id             AS id,
        work_key       AS work_key,
        created_at     AS created_at
 FROM scraped_results
-WHERE project_id = ?
+WHERE project_id = $1
   AND deleted_at IS NULL
 ORDER BY number DESC;
