@@ -4,12 +4,15 @@ import (
 	"database/sql"
 	_ "database/sql"
 	_ "embed"
+	// El driver de pgx debe estar presente para que sql.Open lo encuentre
+	_ "github.com/jackc/pgx/v5/stdlib"
+
 	"webscraper-go/topics/domain"
 
 	"github.com/jackskj/carta"
 	"github.com/stroiman/go-automapper"
 
-	"github.com/EdwardMelendezM/api-info-shared/db"
+	"webscraper-go/infrastructure/persistence/postgres/db"
 )
 
 //go:embed sql/get_topics.sql

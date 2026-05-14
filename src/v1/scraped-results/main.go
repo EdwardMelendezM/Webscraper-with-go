@@ -18,8 +18,9 @@ import (
 
 	"database/sql"
 
+	"webscraper-go/infrastructure/persistence/postgres/db"
+
 	"github.com/EdwardMelendezM/api-info-shared/config"
-	"github.com/EdwardMelendezM/api-info-shared/db"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -76,7 +77,7 @@ func main() {
 	//	fmt.Println(word)
 	//}
 
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	clientOptions := options.Client().ApplyURI("mongodb://mongo:secret@localhost:27030/acoso-db?authSource=admin")
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log.Fatal(err)
@@ -871,6 +872,7 @@ func main() {
 			Psicoterapia:    wordTf["psicoterapia"],
 			Colaboracion:    wordTf["colaboración"],
 			Conciencia:      wordTf["conciencia"],
+			Equilibrio:      wordTf["equilibrio"],
 			Identificacion:  wordTf["identificación"],
 			Mediacion:       wordTf["mediación"],
 			Orientacion:     wordTf["orientación"],

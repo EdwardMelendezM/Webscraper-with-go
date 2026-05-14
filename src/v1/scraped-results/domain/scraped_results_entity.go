@@ -224,6 +224,7 @@ type SemanticOntologyCountResult struct {
 	Noche           float64 `bson:"noche"`
 	Correcto        int     `bson:"correcto"`
 	DeletedAt       bool    `bson:"deleted_at"`
+	Equilibrio      float64
 }
 type SemanticOntologyTfIdfResult struct {
 	ProjectID       string  `bson:"project_id"`

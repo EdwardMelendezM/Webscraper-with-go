@@ -12,8 +12,9 @@ import (
 	WebScrapingCollectRepository "webscraper-go/web-scraping/infrastructure/scraping/collect"
 	webScraperUseCase "webscraper-go/web-scraping/usecase"
 
+	"webscraper-go/infrastructure/persistence/postgres/db"
+
 	"github.com/EdwardMelendezM/api-info-shared/config"
-	"github.com/EdwardMelendezM/api-info-shared/db"
 
 	// El driver de pgx debe estar presente para que sql.Open lo encuentre
 	_ "github.com/jackc/pgx/v5/stdlib"
